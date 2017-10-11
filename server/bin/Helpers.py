@@ -47,13 +47,13 @@ class Helpers:
         try:
             temp = d.split('/')
             if len(temp) is not 3:
-                raise ("Invalid datetime string - Must contain two forward slashes!")
+                raise Exception("Invalid datetime string - Must contain two forward slashes!")
             temp1 = temp[2].split(' ')
             if len(temp1) is not 2:
-                raise ("Invalid datetime string - Must have a space between the year and time!")
+                raise Exception("Invalid datetime string - Must have a space between the year and time!")
             temp2 = temp1[1].split(':')
             if len(temp2) is not 3:
-                raise ("Invalid datetime string - Time must contain two colons!")
+                raise Exception("Invalid datetime string - Time must contain two colons!")
             
             #(year, month, day, hour, minute, second)
             return ((temp1[0], temp[0], temp[1], temp2[0], temp2[1], temp2[2]))
