@@ -1,4 +1,4 @@
-CREATE DATABASE auth;
+CREATE DATABASE IF NOT EXISTS auth;
 
 \c auth
 
@@ -9,6 +9,7 @@ salt = salt used for password hashing.
 usermetadata = JSON blob describing the user. Need to figure out best data type for this.
 INDEXED on id
 */
+DROP TABLE IF EXISTS users;
 CREATE TABLE users (
     id bigint,
     username text NOT NULL,
@@ -24,6 +25,7 @@ secret = private key passed to application for JWT signature validation.
 algorithm = hashing algorithm to use for JWT signature generation.
 INDEXED on id
 */
+DROP TABLE IF EXISTS applications;
 CREATE TABLE applications (
     id bigint,
     app_name text NOT NULL,
