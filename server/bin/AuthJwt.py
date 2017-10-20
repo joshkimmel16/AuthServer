@@ -72,7 +72,7 @@ class Authorizer:
     #validate that the given user has been registered
     def authorize_username (self, username):
         try:
-            self.data_layer.Connect(config["server"], config["db"], config["user"], config["password"])
+            self.data_layer.Connect(self.config["server"], self.config["db"], self.config["user"], self.config["password"])
             test = self.data_layer.CustomQuery("SELECT id FROM users WHERE username='" + username + "' LIMIT 1;", "get")
             self.data_layer.Disconnect()
             return {"valid": True, "id": test[0][0]} if len(test) > 0 else {"valid": False, "id": None}
@@ -82,7 +82,7 @@ class Authorizer:
     #validate that the given user's password is correct
     def authorize_password (self, user_id, password):
         try:
-            self.data_layer.Connect(config["server"], config["db"], config["user"], config["password"])
+            self.data_layer.Connect(self.config["server"], self.config["db"], self.config["user"], self.config["password"])
             u = self.data_layer.CustomQuery("SELECT * FROM users WHERE id=" + str(user_id) + " LIMIT 1;", "get")
             self.data_layer.Disconnect()
             if len(u) == 0:
@@ -100,7 +100,7 @@ class Authorizer:
     def decrypt_token (self, jwt, app_id):
         try:
             #get the secret for the given application
-            self.data_layer.Connect(config["server"], config["db"], config["user"], config["password"])
+            self.data_layer.Connect(self.config["server"], self.config["db"], self.config["user"], self.config["password"])
             s = self.data_layer.CustomQuery('SELECT * FROM applications WHERE id=' + str(app_id) + ' LIMIT 1;', "get")
             self.data_layer.Disconnect()
             if len(s) == 1:
@@ -146,7 +146,7 @@ class Authorizer:
         try:
             #generate payload
             #get app secret and algorithm
-            self.data_layer.Connect(config["server"], config["db"], config["user"], config["password"])
+            self.data_layer.Connect(self.config["server"], self.config["db"], self.config["user"], self.config["password"])
             user = self.data_layer.CustomQuery('SELECT * FROM users WHERE id=' + str(user_id) + " LIMIT 1;", "get")
             app = self.data_layer.CustomQuery('SELECT * FROM applications WHERE id=' + str(app_id) + " LIMIT 1;", "get")
             self.data_layer.Disconnect()
@@ -215,7 +215,7 @@ class Authorizer:
             um = json.dumps(user_metadata)
             salt = h.generate_salt()
             hashed = h.hash_hmac((password + salt), self.password_secret)
-            self.data_layer.Connect(config["server"], config["db"], config["user"], config["password"])
+            self.data_layer.Connect(self.config["server"], self.config["db"], self.config["user"], self.config["password"])
             res = self.data_layer.ExecuteFunction('create_user', ['string', 'string', 'string', 'string'], [username, hashed, salt, um])
             self.data_layer.Disconnect()
             return {"id": res[0][0]}
@@ -249,7 +249,7 @@ class Authorizer:
     #method to update the given user's username
     def update_username (self, user_id, new_name):
         try:
-            self.data_layer.Connect(config["server"], config["db"], config["user"], config["password"])
+            self.data_layer.Connect(self.config["server"], self.config["db"], self.config["user"], self.config["password"])
             self.data_layer.ExecuteFunction('update_username', ['int', 'string'], [user_id, new_name])
             self.data_layer.Disconnect()
             return "Username updated!"
@@ -261,7 +261,7 @@ class Authorizer:
         try:
             salt = h.generate_salt()
             hashed = h.hash_hmac((new_password + salt), self.password_secret)
-            self.data_layer.Connect(config["server"], config["db"], config["user"], config["password"])
+            self.data_layer.Connect(self.config["server"], self.config["db"], self.config["user"], self.config["password"])
             self.data_layer.ExecuteFunction('update_password', ['int', 'string', 'string'], [user_id, hashed, salt])
             self.data_layer.Disconnect()
             return "Password updated!"
@@ -272,7 +272,7 @@ class Authorizer:
     def update_metadata (self, user_id, new_metadata):
         try:
             um = json.dumps(new_metadata)
-            self.data_layer.Connect(config["server"], config["db"], config["user"], config["password"])
+            self.data_layer.Connect(self.config["server"], self.config["db"], self.config["user"], self.config["password"])
             self.data_layer.ExecuteFunction('update_usermetadata', ['int', 'string'], [user_id, um])
             self.data_layer.Disconnect()
             return "User metadata updated!"
@@ -282,7 +282,7 @@ class Authorizer:
     #method to delete the given user
     def unregister_user (self, user_id):
         try:
-            self.data_layer.Connect(config["server"], config["db"], config["user"], config["password"])
+            self.data_layer.Connect(self.config["server"], self.config["db"], self.config["user"], self.config["password"])
             self.data_layer.ExecuteFunction('delete_user', ['int'], [user_id])
             self.data_layer.Disconnect()
             return "User deleted!"
