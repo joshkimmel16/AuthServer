@@ -3,6 +3,7 @@ import hashlib
 import time
 import datetime
 import base64
+import random
 from os import urandom
 from Errors import Error
 
@@ -101,6 +102,14 @@ class Helpers:
                 return bytearray(urandom(100))
         except Exception as e:
             raise HelperException("Error generating an encryption key!", "generate_secret", e)
+            
+    #generate a salt string for passwords
+    def generate_salt (self):
+        ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        chars=[]
+        for i in range(16):
+            chars.append(random.choice(ALPHABET))
+        return "".join(chars)
     
     #perform array join on an array
     #PASSED TESTING

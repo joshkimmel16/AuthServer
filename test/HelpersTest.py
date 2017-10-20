@@ -24,6 +24,10 @@ hashed4 = h.hash_hmac(password, secret1)
 if hashed1 == hashed2 or hashed1 == hashed3 or not hashed1 == hashed4:
     raise Exception("Test failed! Method: Hash and secret generation")
     
+#salt generation test
+salt = h.generate_salt()
+print (salt)
+    
 #datetime string parsing/creation
 year = "2017"
 month = "10"
