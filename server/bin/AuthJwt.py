@@ -45,8 +45,13 @@ class TokenGeneratorException (Error):
     pass
 
 
+#TODO:
+#no restrictions on duplicate user/application names
+#no protection against SQL injection for CustomQuery in DataLayer
+#figure out how to deal with retrieving forgotten usernames
+    #based on metadata??
+
 #class implementing all methods required for Auth web server
-#TODO: add salt to password hashing
 class Authorizer:
     
     #MEMBERS
@@ -64,41 +69,46 @@ class Authorizer:
         self.password_secret = config["password_secret"]
         self.token_lifetime = config["token_lifetime"]
         
-    '''
     #validate that the given user has been registered
-    def authorize_username (username):
+    def authorize_username (self, username):
         try:
             self.data_layer.Connect(config["server"], config["db"], config["user"], config["password"])
-            test = self.data_layer.GetData('users', ['username'], ['username'], [username])
+            test = self.data_layer.CustomQuery("SELECT id FROM users WHERE username='" + username + "' LIMIT 1;", "get")
             self.data_layer.Disconnect()
-            return len(test) is 1
+            return {"valid": True, "id": test[0][0]} if len(test) > 0 else {"valid": False, "id": None}
         except Exception as e:
             raise AuthorizerException("Error validating the provided username!", "authorize_username", e)
     
     #validate that the given user's password is correct
-    def authorize_password (self, username, password):
+    def authorize_password (self, user_id, password):
         try:
-            hashed = h.hash_hmac(password, self.password_secret)
             self.data_layer.Connect(config["server"], config["db"], config["user"], config["password"])
-            test = self.data_layer.GetData('users', ['user_metadata'], ['username', 'password'], [username, hashed])
+            u = self.data_layer.CustomQuery("SELECT * FROM users WHERE id=" + str(user_id) + " LIMIT 1;", "get")
             self.data_layer.Disconnect()
-            return (True, test[0]) if len(test) is 1 else (False, None)
+            if len(u) == 0:
+                return {"valid": False}
+            else:
+                user = u[0]
+                salt = user[3]
+                pwd = user[2]
+                hashed = h.hash_hmac((password + salt), self.password_secret)
+                return {"valid": True} if hashed == pwd else {"valid": False}
         except Exception as e:
             raise AuthorizerException("Error validating the provided password!", "authorize_password", e)
     
     #decrypt a provided jwt
-    def decrypt_token (self, jwt, app_name):
+    def decrypt_token (self, jwt, app_id):
         try:
             #get the secret for the given application
             self.data_layer.Connect(config["server"], config["db"], config["user"], config["password"])
-            s = self.data_layer.GetData('applications', ['secret', 'algorithm'], ['app_name'], [app_name])
+            s = self.data_layer.CustomQuery('SELECT * FROM applications WHERE id=' + str(app_id) + ' LIMIT 1;', "get")
             self.data_layer.Disconnect()
-            if len(s) is 1:
-                secret = s[0]['secret']
-                alg = s[0]['algorithm']
+            if len(s) == 1:
+                secret = base64.b64decode(str.encode(s[0][2]))
+                alg = s[0][3]
                 token = jwt.split('.')
                 if len(token) is not 3:
-                    raise ("Invalid JWT!")
+                    raise AuthorizerException("Invalid JWT!", "decrypt_token", None)
                 header = token[0]
                 payload = token[1]
                 signature = token[2]
@@ -109,54 +119,55 @@ class Authorizer:
                 
                 #if not, throw an error
                 if not sig == signature:
-                    raise ("The signature is not valid for the provided JWT!")
+                    raise AuthorizerException("The signature is not valid for the provided JWT!", "decrypt_token", None)
                 #if so, create dictionary components
                 else:
                     result = {}
-                    result['header'] = h.base64_decode(header)
-                    result['payload'] = h.base64_decode(payload)
+                    result['header'] = json.loads(h.base64_decode(header))
+                    result['payload'] = json.loads(h.base64_decode(payload))
                     return result
             else:
-                raise ("Couldn't find the provided application's secret!")
+                raise AuthorizerException("Couldn't find the provided application's secret!", "decrypt_token", None)
         except Exception as e:
-            raise AuthorizerException("Could not parse provided JWT!", "decrypt_token", e)
+            raise AuthorizerException("Error decrypting provided JWT!", "decrypt_token", e)
     
     #determine whether the given jwt has expired
     #returns True if the given payload has NOT expired yet
     def check_token_expiration (self, payload):
         try:
             expires = payload['exp']
-            return h.compare_datetime(expires)
+            return h.compare_datetime_string(expires)
         except Exception as e:
             raise AuthorizerException("Error encountered while validating token expiration!", "check_token_expiration", e)
             
     
     #generate a jwt to be passed to the requester
-    def provision_jwt (self, app_name, username):
+    def provision_jwt (self, app_id, user_id):
         try:
             #generate payload
             #get app secret and algorithm
-            
             self.data_layer.Connect(config["server"], config["db"], config["user"], config["password"])
-            user_info = self.data_layer.GetData('users', ['username', 'usermetadata'], ['username'], [username])
-            
-            app_info = self.data_layer.GetData('applications', ['secret', 'algorithm'], ['app_name'], [app_name])
+            user = self.data_layer.CustomQuery('SELECT * FROM users WHERE id=' + str(user_id) + " LIMIT 1;", "get")
+            app = self.data_layer.CustomQuery('SELECT * FROM applications WHERE id=' + str(app_id) + " LIMIT 1;", "get")
             self.data_layer.Disconnect()
             
-            if len(user_info) is not 1 or len(app_info) is not 1:
-                raise ("Missing user and/or app info!")
+            if len(user) == 0 or len(app) == 0:
+                raise AuthorizerException("Could not retrieve the provided user and/or application!", "provision_jwt", None)
+            else:
+                user = user[0]
+                app = app[0]
                 
             dt = datetime.datetime.now() + datetime.timedelta(milliseconds=self.token_lifetime)
-            expires = h.create_datetime_string(dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second)
-            payload = json.dumps({"exp": h.get_date_string_from_milliseconds(expires), "username": user_info['username'], "usermetadata": json.loads(user_info['usermetadata'])})
+            expires = h.create_datetime_string(str(dt.year), str(dt.month), str(dt.day), str(dt.hour), str(dt.minute), str(dt.second))
+            payload = json.dumps({"exp": expires, "userid": user[0], "username": user[1], "usermetadata": json.loads(user[4])})
         
             #use TokenGenerator for remainder of work
-            tf = TokenGenerator(app_info['algorithm'], payload, app_info['secret'])
+            secret = base64.b64decode(str.encode(app[2]))
+            tf = TokenGenerator(app[3], payload, secret)
             return tf.generate_token()
         except Exception as e:
             raise AuthorizerException("Error encountered while generating the JWT for the given user!", "provision_jwt", e)
     
-    '''
     #method to create an application
     #this creates a secret for the given application
     #optional parameter to explicitly determine the hashing algorithm used for jwts
@@ -198,19 +209,20 @@ class Authorizer:
         except Exception as e:
             raise AuthorizerException("Could not update the given application!", "update_application", e)
     
-    '''
     #method to create a user in the system
     def register_user (self, username, password, user_metadata):
         try:
             um = json.dumps(user_metadata)
-            hashed = h.hash_hmac(password, self.password_secret)
+            salt = h.generate_salt()
+            hashed = h.hash_hmac((password + salt), self.password_secret)
             self.data_layer.Connect(config["server"], config["db"], config["user"], config["password"])
-            self.data_layer.InsertData('users', ['username', 'password', 'usermetadata'], [username, hashed, um])
+            res = self.data_layer.ExecuteFunction('create_user', ['string', 'string', 'string', 'string'], [username, hashed, salt, um])
             self.data_layer.Disconnect()
-            return username
+            return {"id": res[0][0]}
         except Exception as e:
             raise AuthorizerException("Could not register the user!", "register_user", e)
     
+    '''
     #method to retrieve the given user's username
     #THIS METHOD NEEDS TO BE REFINED
     def retrieve_username (self, metadata_keys, metadata_values):
@@ -232,38 +244,50 @@ class Authorizer:
                 raise ("Could not find the given user using the data provided!")
         except Exception as e:
             raise AuthorizerException("Error encountered while trying to retrieve username!", "retrieve_username", e)
+    '''
+    
+    #method to update the given user's username
+    def update_username (self, user_id, new_name):
+        try:
+            self.data_layer.Connect(config["server"], config["db"], config["user"], config["password"])
+            self.data_layer.ExecuteFunction('update_username', ['int', 'string'], [user_id, new_name])
+            self.data_layer.Disconnect()
+            return "Username updated!"
+        except Exception as e:
+            raise AuthorizerException("Could not update the given user's username!", "update_username", e)
     
     #method to update the given user's password
-    def update_password (self, username, new_password):
+    def update_password (self, user_id, new_password):
         try:
-            hashed = h.hash_hmac(new_password, self.password_secret)
+            salt = h.generate_salt()
+            hashed = h.hash_hmac((new_password + salt), self.password_secret)
             self.data_layer.Connect(config["server"], config["db"], config["user"], config["password"])
-            self.data_layer.UpdateData('users', ['password'], [hashed], ['username'], [username])
+            self.data_layer.ExecuteFunction('update_password', ['int', 'string', 'string'], [user_id, hashed, salt])
             self.data_layer.Disconnect()
-            return username
+            return "Password updated!"
         except Exception as e:
             raise AuthorizerException("Could not update the given user's password!", "update_password", e)
     
     #method to update the given user's metadata
-    def update_metadata (self, username, new_metadata):
+    def update_metadata (self, user_id, new_metadata):
         try:
+            um = json.dumps(new_metadata)
             self.data_layer.Connect(config["server"], config["db"], config["user"], config["password"])
-            self.data_layer.UpdateData('users', ['usermetadata'], [new_metadata], ['username'], [username])
+            self.data_layer.ExecuteFunction('update_usermetadata', ['int', 'string'], [user_id, um])
             self.data_layer.Disconnect()
-            return username
+            return "User metadata updated!"
         except Exception as e:
             raise AuthorizerException("Could not update the given user's metadata!", "update_metadata", e)
     
     #method to delete the given user
-    def unregister_user (self, username):
+    def unregister_user (self, user_id):
         try:
             self.data_layer.Connect(config["server"], config["db"], config["user"], config["password"])
-            self.data_layer.DeleteData('users', ['username'], [username])
+            self.data_layer.ExecuteFunction('delete_user', ['int'], [user_id])
             self.data_layer.Disconnect()
-            return username
+            return "User deleted!"
         except Exception as e:
             raise AuthorizerException("Could not unregister the given user!", "unregister_user", e)
-    '''
     
 
 #custom Authorizer errors
