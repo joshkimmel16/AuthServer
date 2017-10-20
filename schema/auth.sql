@@ -1,4 +1,4 @@
-CREATE DATABASE IF NOT EXISTS auth;
+CREATE DATABASE auth;
 
 \c auth
 

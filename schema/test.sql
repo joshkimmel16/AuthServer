@@ -1,4 +1,4 @@
-CREATE DATABASE IF NOT EXISTS unittests;
+CREATE DATABASE unittests;
 
 \c unittests
 
