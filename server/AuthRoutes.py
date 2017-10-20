@@ -1,16 +1,53 @@
+from sys import path
+import os
+import AuthConfig
+path.append(os.getcwd() + "\\bin")
 import AuthJwt
 import Helpers
 import Errors
-import Config
-from flask import Flask, request, jsonify, redirect
+from flask import Flask, request, jsonify, redirect, Response
 
 #global variable initialization
 app = Flask(__name__)
-config = Config.Config()
+config = AuthConfig.Config().config
 auth = AuthJwt.Authorizer(config)
+AuthorizerException = AuthJwt.AuthorizerException
 
-#TODO: implement 400 response checking
+#TODO: 
+#implement input sanitizer => 400 response
+#implement server logging
+#implement application id to secret cache
+    #will require some modifications in AuthJwt
+#implement access rights model for users
 
+#define error handlers
+@app.errorhandler(AuthorizerException)
+def authorization_exception(err):
+    resp = jsonify({"error": err.message})
+    resp.status = 500
+    return resp
+
+@app.errorhandler(Exception)
+def generic_exception(err):
+    resp = jsonify({"error": "An unexpected error occurred!"})
+    resp.status = 500
+    return resp
+
+#NOT WORKING
+@app.errorhandler(404)
+def route_not_found(err):
+    resp = jsonify({"error": "The requested route has not been implemented!"})
+    resp.status = 404
+    return resp
+
+#NOT WORKING
+@app.errorhandler(405)
+def method_not_allowed(err):
+    resp = jsonify({"error": "The provided method is not valid for the given route!"})
+    resp.status = 405
+    return resp
+
+'''
 @app.route("/authorize/session", methods=['GET'])
 def authorize_session ():
     #check for JWT cookie
@@ -99,90 +136,184 @@ def authorize_password ():
         #redirect back to user sign in page with fail param, log error
         url = config.user_signin + '?fail=app&redirectUrl=' + redirect_url
         return redirect(url, code=302)
-        
+'''        
 
-@app.route("/register/application", methods=['POST', 'DELETE'])
-def set_app_registration ():
-    #register application
-    if request.method == 'POST':
+#registers an application
+#no need to check JWT for this route
+@app.route("/register/application", methods=['POST'])
+def register_application ():
+    try:
         content = request.get_json(force=True)
-        app_name = content['app_name']
-        try:
-            secret = auth.register_application(app_name)
-            #respond with 200 and secret + app_name in response body
-        except AuthorizerException as e:
-            #respond with 500, log error
-        except Exception as e:
-            #respond with 500, log error
+        app_name = content["name"]
+        app_alg = content["algorithm"] if "algorithm" in content else None
         
-    #unregister application
-    else:
-        app_name = request.args.get('app_name')
-        try:
-            check = auth.unregister_application(app_name)
-            #respond with 200 and no body
-        except AuthorizerException as e:
-            #respond with 500, log error
-        except Exception as e:
-            #respond with 500, log error
-            
-@app.route("/register/user", methods=['POST', 'DELETE'])    
-def set_user_registration ():
-    #register user
-    if request.method == 'POST':
+        output = auth.register_application(app_name, app_alg)
+        
+        #respond with 200 and output in body
+        resp = jsonify(output)
+        resp.status_code = 200
+        return resp
+    except AuthorizerException as e:
+        #respond with 500, specific error message
+        raise e
+    except Exception as e:
+        #respond with 500, generic error message
+        raise e
+        
+#registers an application
+#no need to check JWT for this route
+@app.route("/register/user", methods=['POST'])
+def register_user ():
+    try:
         content = request.get_json(force=True)
-        username = content['username']
-        password = content['password']
-        usermetadata = content['usermetadata']
-        try:
-            check = auth.register_user(username, password, usermetadata)
-            #respond with 200 and username in response body
-        except AuthorizerException as e:
-            #respond with 500, log error
-        except Exception as e:
-            #respond with 500, log error
+        u_name = content["name"]
+        u_password = content["password"]
+        u_metadata = content["metadata"] if "metadata" in content else {}
         
-    #unregister user
-    else:
-        username = request.args.get('username')
-        try:
-            check = auth.unregister_user(username)
-            #respond with 200 and no body
-        except AuthorizerException as e:
-            #respond with 500, log error
-        except Exception as e:
-            #respond with 500, log error
-            
-            
-@app.route("/user", methods=['GET', 'UPDATE'])
-def update_user ():
-    #retrieve username
-    if request.method == 'GET':
-        usermetadata = request.args.get('usermetadata')
-        try:
-            username = auth.retrieve_username(usermetadata)
-            #respond with 200 and username in response body
-        except AuthorizerException as e:
-            #respond with 500, log error
-        except Exception as e:
-            #respond with 500, log error
-            
-    #update metadata and/or password
-    else:
+        output = auth.register_user(u_name, u_password, u_metadata)
+        
+        #respond with 200 and output in body
+        resp = jsonify(output)
+        resp.status_code = 200
+        return resp
+    except AuthorizerException as e:
+        #respond with 500, specific error message
+        raise e
+    except Exception as e:
+        #respond with 500, generic error message
+        raise e
+        
+#updates an application
+#no need to check JWT for this route
+@app.route("/update/application", methods=['UPDATE'])
+def update_application ():
+    try:
         content = request.get_json(force=True)
-        username = content['username']
-        new_password = content['password'] if 'password' in content else None
-        metadata = content['usermetadata'] if 'usermetadata' in content else None
+        app_id = content["id"]
+        app_name = content["name"] if "name" in content else None
+        app_alg = content["algorithm"] if "algorithm" in content else None
         
-        try:
-            if new_password is not None:
-                check1 = auth.update_password(username, new_password)
-            if metadata is not None:
-                check2 = auth.update_metadata(username, metadata)
-                
-            #respond with 200 and username in response body
-        except AuthorizerException as e:
-            #respond with 500, log error
-        except Exception as e:
-            #respond with 500, log error
-
+        output = auth.update_application(app_id, app_name, app_alg)
+        
+        #respond with 200 and output in body
+        resp = jsonify({"message": output})
+        resp.status_code = 200
+        return resp
+    except AuthorizerException as e:
+        #respond with 500, specific error message
+        raise e
+    except Exception as e:
+        #respond with 500, generic error message
+        raise e
+        
+#updates a user's username
+#no need to check JWT for this route
+@app.route("/update/username", methods=['UPDATE'])
+def update_username ():
+    try:
+        content = request.get_json(force=True)
+        u_id = content["id"]
+        u_name = content["name"]
+        
+        output = auth.update_username(u_id, u_name)
+        
+        #respond with 200 and output in body
+        resp = jsonify({"message": output})
+        resp.status_code = 200
+        return resp
+    except AuthorizerException as e:
+        #respond with 500, specific error message
+        raise e
+    except Exception as e:
+        #respond with 500, generic error message
+        raise e
+        
+#updates a user's password
+#no need to check JWT for this route
+@app.route("/update/password", methods=['UPDATE'])
+def update_password ():
+    try:
+        content = request.get_json(force=True)
+        u_id = content["id"]
+        u_password = content["password"]
+        
+        output = auth.update_password(u_id, u_password)
+        
+        #respond with 200 and output in body
+        resp = jsonify({"message": output})
+        resp.status_code = 200
+        return resp
+    except AuthorizerException as e:
+        #respond with 500, specific error message
+        raise e
+    except Exception as e:
+        #respond with 500, generic error message
+        raise e
+        
+#updates a user's metadata
+#no need to check JWT for this route
+@app.route("/update/metadata", methods=['UPDATE'])
+def update_metadata ():
+    try:
+        content = request.get_json(force=True)
+        u_id = content["id"]
+        u_metadata = content["metadata"]
+        
+        output = auth.update_metadata(u_id, u_metadata)
+        
+        #respond with 200 and output in body
+        resp = jsonify({"message": output})
+        resp.status_code = 200
+        return resp
+    except AuthorizerException as e:
+        #respond with 500, specific error message
+        raise e
+    except Exception as e:
+        #respond with 500, generic error message
+        raise e
+        
+#unregisters an application
+#no need to check JWT for this route
+@app.route("/unregister/application", methods=['DELETE'])
+def unregister_application ():
+    try:
+        content = request.get_json(force=True)
+        app_id = content["id"]
+        
+        output = auth.unregister_application(app_id)
+        
+        #respond with 200 and output in body
+        resp = jsonify({"message": output})
+        resp.status_code = 200
+        return resp
+    except AuthorizerException as e:
+        #respond with 500, specific error message
+        raise e
+    except Exception as e:
+        #respond with 500, generic error message
+        raise e
+        
+#unregisters a user
+#no need to check JWT for this route
+@app.route("/unregister/user", methods=['DELETE'])
+def unregister_user ():
+    try:
+        content = request.get_json(force=True)
+        u_id = content["id"]
+        
+        output = auth.unregister_user(u_id)
+        
+        #respond with 200 and output in body
+        resp = jsonify({"message": output})
+        resp.status_code = 200
+        return resp
+    except AuthorizerException as e:
+        #respond with 500, specific error message
+        raise e
+    except Exception as e:
+        #respond with 500, generic error message
+        raise e
+    
+#main application entry point
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=config["port"])

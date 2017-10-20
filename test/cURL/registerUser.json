@@ -1,0 +1,8 @@
+{
+    "name": "test.user",
+    "password": "raging",
+    "metadata": {
+        "email": "test@user.com",
+        "access": 12345
+    }
+}
