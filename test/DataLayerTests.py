@@ -7,30 +7,30 @@ from DataLayer import PostGres
 p = PostGres()
 
 #connect
-p.Connect("localhost", "auth", "postgres", "admin")
+p.Connect("localhost", "unittests", "postgres", "admin")
 
 #InsertData and GetData
-DataLayer.InsertData("Testing", [("Col1", "Hello"), ("Col2", "World")])
-print (DataLayer.GetData("Testing", [], [("Col1", "Hello")]))
+p.InsertData("testing", [("col1", "Hello"), ("col2", "World")])
+print (p.GetData("testing", [], [("col1", "Hello")]))
 
 #UpdateData and GetData
-DataLayer.UpdateData("Testing", [("Col1", "Goodbye")], [("Col2", "World")])
-print (DataLayer.GetData("Testing", [], [("Col2", "World")]))
+p.UpdateData("testing", [("col1", "Goodbye")], [("col2", "World")])
+print (p.GetData("testing", [], [("col2", "World")]))
 
 #DeleteData and GetData
-DataLayer.DeleteData("Testing", [("Col2", "World")])
-print (DataLayer.GetData("Testing", [], [("Col2", "World")]))
+p.DeleteData("testing", [("col2", "World")])
+print (p.GetData("testing", [], [("col2", "World")]))
 
 #ExecuteFunction
-out1 = DataLayer.ExecuteFunction("test_function", ["string", "string"], ["Rage", "Boom"])
+out1 = p.ExecuteFunction("test_function", ["string", "string"], ["Rage", "Boom"])
 print (out1)
 
 #CustomQuery - GET
-out2 = DataLayer.CustomQuery("SELECT * FROM Testing;", "get")
+out2 = p.CustomQuery("SELECT * FROM testing;", "get")
 print (out2)
 
 #CustomQuery - NON-GET
-DataLayer.CustomQuery("DELETE FROM Testing;", "delete")
+p.CustomQuery("DELETE FROM testing;", "delete")
 
 #Disconnect
-DataLayer.Disconnect()
+p.Disconnect()

@@ -235,7 +235,7 @@ class PostGres:
                 else:    
                     self._connection.commit()
             except Exception as e:
-                aise DataException("Error executing custom query!", "CustomQuery", e)
+                raise DataException("Error executing custom query!", "CustomQuery", e)
         else:
             raise Exception("A query string must be provided!", "CustomQuery", None)
             
