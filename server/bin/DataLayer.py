@@ -199,7 +199,7 @@ class PostGres:
                 #generate query string based on input parameters
                 query = ("SELECT " + func_name + "(")
                 for x in range(len(arg_types)):
-                    query = query + (arg_vals[x] + ",") if arg_types[x] != 'string' else query + ("'" + arg_vals[x] + "',") 
+                    query = query + (str(arg_vals[x]) + ",") if arg_types[x] != 'string' else query + ("'" + arg_vals[x] + "',") 
                 query = query[:-1]
                 query = query + ");"
             except Exception as e:
@@ -245,29 +245,3 @@ class PostGres:
 class DataException (Error):
     pass
     
-    
-#method to run unit tests
-#PASSED INITIAL TESTING
-def debug():
-    global DataLayer
-    DataLayer = PostGres()
-    DataLayer.Connect("localhost", "Test", "postgres", "lemmick")
-    DataLayer.InsertData("Testing", [("Col1", "Hello"), ("Col2", "World")])
-    print (DataLayer.GetData("Testing", [], [("Col1", "Hello")]))
-    DataLayer.UpdateData("Testing", [("Col1", "Goodbye")], [("Col2", "World")])
-    print (DataLayer.GetData("Testing", [], [("Col2", "World")]))
-    DataLayer.DeleteData("Testing", [("Col2", "World")])
-    print (DataLayer.GetData("Testing", [], [("Col2", "World")]))
-    
-    
-#method to execute when running this module directly
-def main():
-    global DataLayer
-    DataLayer = PostGres()
-    
-#primary execution point for this module
-if __name__ == "__main__":
-    if DEBUG:
-        debug()
-    else:
-        main()

@@ -1,7 +1,8 @@
 import datetime
 import json
+import base64
 from Helpers import Helpers
-from DataLayer import DataLayer
+from DataLayer import PostGres
 from Errors import Error
 
 #initialize globals
@@ -11,7 +12,7 @@ h = Helpers()
 class TokenGenerator:
     
     #pass in necessary internals
-    def __init__ (algorithm, payload, secret):
+    def __init__ (self, algorithm, payload, secret):
         self.algorithm = algorithm
         self.payload = payload
         self.secret = secret
@@ -21,7 +22,7 @@ class TokenGenerator:
         try:
             if self.algorithm is "HS256":
                 return h.hash_hmac(s, self.secret)
-            else if self.algorithm is "RSA":
+            elif self.algorithm is "RSA":
                 return h.hash_rsa(s, self.secret)
             else:
                 return s
@@ -56,17 +57,19 @@ class Authorizer:
     
     #constructor that captures info for DB connections
     #also capture statics for JWT generation
-    def __init__ (config):
-        self.data_layer = DataLayer(config["server"], config["db"], config["user"], config["password"])
+    def __init__ (self, config):
+        self.config = config
+        self.data_layer = PostGres()
         self.default_alg = config["default_alg"]
         self.password_secret = config["password_secret"]
         self.token_lifetime = config["token_lifetime"]
         
+    '''
     #validate that the given user has been registered
     def authorize_username (username):
         try:
-            self.data_layer.Connect()
-            test = self.data_layer.Select('users', ['username'], ['username'], [username])
+            self.data_layer.Connect(config["server"], config["db"], config["user"], config["password"])
+            test = self.data_layer.GetData('users', ['username'], ['username'], [username])
             self.data_layer.Disconnect()
             return len(test) is 1
         except Exception as e:
@@ -76,8 +79,8 @@ class Authorizer:
     def authorize_password (self, username, password):
         try:
             hashed = h.hash_hmac(password, self.password_secret)
-            self.data_layer.Connect()
-            test = self.data_layer.Select('users', ['user_metadata'], ['username', 'password'], [username, hashed])
+            self.data_layer.Connect(config["server"], config["db"], config["user"], config["password"])
+            test = self.data_layer.GetData('users', ['user_metadata'], ['username', 'password'], [username, hashed])
             self.data_layer.Disconnect()
             return (True, test[0]) if len(test) is 1 else (False, None)
         except Exception as e:
@@ -87,8 +90,8 @@ class Authorizer:
     def decrypt_token (self, jwt, app_name):
         try:
             #get the secret for the given application
-            self.data_layer.Connect()
-            s = self.data_layer.Select('applications', ['secret', 'algorithm'], ['app_name'], [app_name])
+            self.data_layer.Connect(config["server"], config["db"], config["user"], config["password"])
+            s = self.data_layer.GetData('applications', ['secret', 'algorithm'], ['app_name'], [app_name])
             self.data_layer.Disconnect()
             if len(s) is 1:
                 secret = s[0]['secret']
@@ -134,10 +137,10 @@ class Authorizer:
             #generate payload
             #get app secret and algorithm
             
-            self.data_layer.Connect()
-            user_info = self.data_layer.Select('users', ['username', 'usermetadata'], ['username'], [username])
+            self.data_layer.Connect(config["server"], config["db"], config["user"], config["password"])
+            user_info = self.data_layer.GetData('users', ['username', 'usermetadata'], ['username'], [username])
             
-            app_info = self.data_layer.Select('applications', ['secret', 'algorithm'], ['app_name'], [app_name])
+            app_info = self.data_layer.GetData('applications', ['secret', 'algorithm'], ['app_name'], [app_name])
             self.data_layer.Disconnect()
             
             if len(user_info) is not 1 or len(app_info) is not 1:
@@ -153,37 +156,56 @@ class Authorizer:
         except Exception as e:
             raise AuthorizerException("Error encountered while generating the JWT for the given user!", "provision_jwt", e)
     
+    '''
     #method to create an application
     #this creates a secret for the given application
     #optional parameter to explicitly determine the hashing algorithm used for jwts
     #returns secret since this must be passed back to the registered app
-    def register_application (self, app_name, alg=self.default_alg):
+    def register_application (self, app_name, alg=None):
+        if alg is None:
+            alg = self.default_alg
         try:
-            secret = h.generate_secret(alg)
-            self.data_layer.Connect()
-            self.data_layer.Insert('applications', ['app_name', 'secret', 'algorithm'], [app_name, secret, alg])
+            secret = base64.b64encode(h.generate_secret(alg)).decode()
+            self.data_layer.Connect(self.config["server"], self.config["db"], self.config["user"], self.config["password"])
+            res = self.data_layer.ExecuteFunction('create_application', ['string', 'string', 'string'], [app_name, secret, alg])
             self.data_layer.Disconnect()
-            return secret
+            return {"secret": secret, "id": res[0][0]}
         except Exception as e:
             raise AuthorizerException("Could register the application!", "register_application", e)
     
     #method to delete an application
-    def unregister_application (self, app_name):
+    def unregister_application (self, app_id):
         try:
-            self.data_layer.Connect()
-            self.data_layer.Delete('applications', ['app_name'], [app_name])
+            self.data_layer.Connect(self.config["server"], self.config["db"], self.config["user"], self.config["password"])
+            self.data_layer.ExecuteFunction('delete_application', ['int'], [app_id])
             self.data_layer.Disconnect()
-            return app_name
+            return 'Application Deleted!'
         except Exception as e:
             raise AuthorizerException("Could not unregister the given application!", "unregister_application", e)
     
+    #method to update an application
+    def update_application (self, app_id, app_name, app_alg):
+        try:
+            if app_name is not None:
+                self.data_layer.Connect(self.config["server"], self.config["db"], self.config["user"], self.config["password"])
+                self.data_layer.ExecuteFunction('update_appname', ['int', 'string'], [app_id, app_name])
+                self.data_layer.Disconnect()
+            if app_alg is not None:
+                self.data_layer.Connect(self.config["server"], self.config["db"], self.config["user"], self.config["password"])
+                self.data_layer.ExecuteFunction('update_appalgorithm', ['int', 'string'], [app_id, app_alg])
+                self.data_layer.Disconnect()
+            return 'Application Updated!'
+        except Exception as e:
+            raise AuthorizerException("Could not update the given application!", "update_application", e)
+    
+    '''
     #method to create a user in the system
     def register_user (self, username, password, user_metadata):
         try:
             um = json.dumps(user_metadata)
             hashed = h.hash_hmac(password, self.password_secret)
-            self.data_layer.Connect()
-            self.data_layer.Insert('users', ['username', 'password', 'usermetadata'], [username, hashed, um])
+            self.data_layer.Connect(config["server"], config["db"], config["user"], config["password"])
+            self.data_layer.InsertData('users', ['username', 'password', 'usermetadata'], [username, hashed, um])
             self.data_layer.Disconnect()
             return username
         except Exception as e:
@@ -201,8 +223,8 @@ class Authorizer:
         try:
             where_clause = h.list_join(h.list_merge(h.list_map(metadata_keys, transform_keys), h.list_map(metadata_values, transform_vals)), ' AND ')
             query = 'SELECT [username] FROM [users] WHERE ' + where_clause + ';'
-            self.data_layer.Connect()
-            result = self.data_layer.Custom(query)
+            self.data_layer.Connect(config["server"], config["db"], config["user"], config["password"])
+            result = self.data_layer.Custom(query) #error here
             self.data_layer.Disconnect()
             if len(result) is 1:
                 return result[0]['username']
@@ -215,8 +237,8 @@ class Authorizer:
     def update_password (self, username, new_password):
         try:
             hashed = h.hash_hmac(new_password, self.password_secret)
-            self.data_layer.Connect()
-            self.data_layer.Update('users', ['password'], [hashed], ['username'], [username])
+            self.data_layer.Connect(config["server"], config["db"], config["user"], config["password"])
+            self.data_layer.UpdateData('users', ['password'], [hashed], ['username'], [username])
             self.data_layer.Disconnect()
             return username
         except Exception as e:
@@ -225,8 +247,8 @@ class Authorizer:
     #method to update the given user's metadata
     def update_metadata (self, username, new_metadata):
         try:
-            self.data_layer.Connect()
-            self.data_layer.Update('users', ['usermetadata'], [new_metadata], ['username'], [username])
+            self.data_layer.Connect(config["server"], config["db"], config["user"], config["password"])
+            self.data_layer.UpdateData('users', ['usermetadata'], [new_metadata], ['username'], [username])
             self.data_layer.Disconnect()
             return username
         except Exception as e:
@@ -235,12 +257,13 @@ class Authorizer:
     #method to delete the given user
     def unregister_user (self, username):
         try:
-            self.data_layer.Connect()
-            self.data_layer.Delete('users', ['username'], [username])
+            self.data_layer.Connect(config["server"], config["db"], config["user"], config["password"])
+            self.data_layer.DeleteData('users', ['username'], [username])
             self.data_layer.Disconnect()
             return username
         except Exception as e:
             raise AuthorizerException("Could not unregister the given user!", "unregister_user", e)
+    '''
     
 
 #custom Authorizer errors
