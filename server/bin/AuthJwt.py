@@ -176,13 +176,21 @@ class Authorizer:
         if alg is None:
             alg = self.default_alg
         try:
+            self.data_layer.Connect(self.config["server"], self.config["db"], self.config["user"], self.config["password"])
+            exist_check = self.data_layer.CustomQuery("SELECT app_name FROM applications WHERE app_name='" + app_name + "' LIMIT 1;", "get")
+            self.data_layer.Disconnect()
+            if len(exist_check) > 0:
+                raise AuthorizerException("An application with the provided name already exists!", "register_application", None)
+        except Exception as e:
+            raise AuthorizerException("Could not verify the provided application name!", "register_application", e)
+        try:
             secret = base64.b64encode(h.generate_secret(alg)).decode()
             self.data_layer.Connect(self.config["server"], self.config["db"], self.config["user"], self.config["password"])
             res = self.data_layer.ExecuteFunction('create_application', ['string', 'string', 'string'], [app_name, secret, alg])
             self.data_layer.Disconnect()
             return {"secret": secret, "id": res[0][0]}
         except Exception as e:
-            raise AuthorizerException("Could register the application!", "register_application", e)
+            raise AuthorizerException("Could not register the application!", "register_application", e)
     
     #method to delete an application
     def unregister_application (self, app_id):
@@ -211,6 +219,14 @@ class Authorizer:
     
     #method to create a user in the system
     def register_user (self, username, password, user_metadata):
+        try:
+            self.data_layer.Connect(self.config["server"], self.config["db"], self.config["user"], self.config["password"])
+            exist_check = self.data_layer.CustomQuery("SELECT username FROM users WHERE username='" + username + "' LIMIT 1;", "get")
+            self.data_layer.Disconnect()
+            if len(exist_check) > 0:
+                raise AuthorizerException("A user with the provided name already exists!", "register_user", None)
+        except Exception as e:
+            raise AuthorizerException("Could not verify the provided username!", "register_user", e)
         try:
             um = json.dumps(user_metadata)
             salt = h.generate_salt()
