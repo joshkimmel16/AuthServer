@@ -251,7 +251,7 @@ class Authorizer:
         try:
             where_clause = h.list_join(transform_json(metadata), ' AND ')
             query = 'SELECT * FROM users ' + where_clause + ';'
-            self.data_layer.Connect(config["server"], config["db"], config["user"], config["password"])
+            self.data_layer.Connect(self.config["server"], self.config["db"], self.config["user"], self.config["password"])
             result = self.data_layer.CustomQuery(query, "get")
             self.data_layer.Disconnect()
             if len(result) == 1:

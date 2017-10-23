@@ -23,12 +23,14 @@ AuthorizerException = AuthJwt.AuthorizerException
 #implement access rights model for users
 
 #define error handlers
+#NOT WORKING??
 @app.errorhandler(AuthorizerException)
 def authorization_exception(err):
     resp = jsonify({"error": err.message})
     resp.status = 500
     return resp
 
+#NOT WORKING??
 @app.errorhandler(Exception)
 def generic_exception(err):
     resp = jsonify({"error": "An unexpected error occurred!"})
@@ -173,6 +175,24 @@ def register_user ():
         u_metadata = content["metadata"] if "metadata" in content else {}
         
         output = auth.register_user(u_name, u_password, u_metadata)
+        
+        #respond with 200 and output in body
+        resp = jsonify(output)
+        resp.status_code = 200
+        return resp
+    except AuthorizerException as e:
+        #respond with 500, specific error message
+        raise e
+    except Exception as e:
+        #respond with 500, generic error message
+        raise e
+        
+@app.route("/retrieve/user", methods=['GET'])
+def retrieve_user ():
+    try:
+        content = request.get_json(force=True)
+        
+        output = auth.retrieve_username(content)
         
         #respond with 200 and output in body
         resp = jsonify(output)
