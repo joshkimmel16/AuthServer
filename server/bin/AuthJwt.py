@@ -238,29 +238,28 @@ class Authorizer:
         except Exception as e:
             raise AuthorizerException("Could not register the user!", "register_user", e)
     
-    '''
-    #method to retrieve the given user's username
-    #THIS METHOD NEEDS TO BE REFINED
-    def retrieve_username (self, metadata_keys, metadata_values):
-        def transform_vals (val):
-            return ("'" + str(val) + "'")
-        
-        def transform_keys (key):
-            return ('[' + str(key) + ']')
+    #method to retrieve the given user's username using metadata
+    def retrieve_username (self, metadata):
+        def transform_json (json):
+            prefix = "WHERE usermetadata SIMILAR TO '%"
+            suffix = "%'"
+            result = []
+            for key, value in json.items():
+                result.append(prefix + '"' + key + '": ' + '"' + value + '"' + suffix)
+            return result
         
         try:
-            where_clause = h.list_join(h.list_merge(h.list_map(metadata_keys, transform_keys), h.list_map(metadata_values, transform_vals)), ' AND ')
-            query = 'SELECT [username] FROM [users] WHERE ' + where_clause + ';'
+            where_clause = h.list_join(transform_json(metadata), ' AND ')
+            query = 'SELECT * FROM users ' + where_clause + ';'
             self.data_layer.Connect(config["server"], config["db"], config["user"], config["password"])
-            result = self.data_layer.Custom(query) #error here
+            result = self.data_layer.CustomQuery(query, "get")
             self.data_layer.Disconnect()
-            if len(result) is 1:
-                return result[0]['username']
+            if len(result) == 1:
+                return {"id": result[0][0], "name": result[0][1]}
             else:
-                raise ("Could not find the given user using the data provided!")
+                raise AuthorizerException("Could not find the given user using the metadata provided!", "retrieve_username", None)
         except Exception as e:
             raise AuthorizerException("Error encountered while trying to retrieve username!", "retrieve_username", e)
-    '''
     
     #method to update the given user's username
     def update_username (self, user_id, new_name):

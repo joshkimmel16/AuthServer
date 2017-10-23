@@ -17,6 +17,9 @@ up1 = a.update_application(new_app["id"], "New Test Application", "HS256")
 #register user
 new_user = a.register_user("test.user", "tu", {'key': 'value'})
 
+#retrieve user
+r1 = a.retrieve_username({"key": "value"})
+
 #update username
 up2 = a.update_username(new_user["id"], "newtest.user")
 
