@@ -23,32 +23,28 @@ AuthorizerException = AuthJwt.AuthorizerException
 #implement access rights model for users
 
 #define error handlers
-#NOT WORKING??
 @app.errorhandler(AuthorizerException)
 def authorization_exception(err):
     resp = jsonify({"error": err.message})
-    resp.status = 500
+    resp.status_code = 500
     return resp
 
-#NOT WORKING??
 @app.errorhandler(Exception)
 def generic_exception(err):
     resp = jsonify({"error": "An unexpected error occurred!"})
-    resp.status = 500
+    resp.status_code = 500
     return resp
 
-#NOT WORKING
 @app.errorhandler(404)
 def route_not_found(err):
     resp = jsonify({"error": "The requested route has not been implemented!"})
-    resp.status = 404
+    resp.status_code = 404
     return resp
 
-#NOT WORKING
 @app.errorhandler(405)
 def method_not_allowed(err):
     resp = jsonify({"error": "The provided method is not valid for the given route!"})
-    resp.status = 405
+    resp.status_code = 405
     return resp
 
 '''
