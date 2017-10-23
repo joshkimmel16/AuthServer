@@ -6,10 +6,12 @@ import AuthJwt
 import Helpers
 import Errors
 from flask import Flask, request, jsonify, redirect, Response
+from flask_cors import CORS
 
 #global variable initialization
 app = Flask(__name__)
 config = AuthConfig.Config().config
+cors = CORS(app, resources={r"/*": {"origins": "*"}})
 auth = AuthJwt.Authorizer(config)
 AuthorizerException = AuthJwt.AuthorizerException
 
