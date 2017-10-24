@@ -5,6 +5,7 @@ path.append(os.getcwd() + "\\bin")
 import AuthJwt
 import Helpers
 import Errors
+import Sanitizer
 from flask import Flask, request, jsonify, redirect, Response
 from flask_cors import CORS
 
@@ -13,16 +14,23 @@ app = Flask(__name__)
 config = AuthConfig.Config().config
 cors = CORS(app, resources={r"/*": {"origins": "*"}})
 auth = AuthJwt.Authorizer(config)
+s = Sanitizer.Sanitizer()
 AuthorizerException = AuthJwt.AuthorizerException
+SanitizerException = Sanitizer.SanitizerException
 
 #TODO: 
-#implement input sanitizer => 400 response
 #implement server logging
 #implement application id to secret cache
     #will require some modifications in AuthJwt
 #implement access rights model for users
 
 #define error handlers
+@app.errorhandler(SanitizerException)
+def sanitizer_exception(err):
+    resp = jsonify({"error": err.message})
+    resp.status_code = 400
+    return resp
+
 @app.errorhandler(AuthorizerException)
 def authorization_exception(err):
     resp = jsonify({"error": err.message})
@@ -144,6 +152,8 @@ def authorize_password ():
 def register_application ():
     try:
         content = request.get_json(force=True)
+        s.Evaluate("register_application", content)
+        
         app_name = content["name"]
         app_alg = content["algorithm"] if "algorithm" in content else None
         
@@ -153,6 +163,9 @@ def register_application ():
         resp = jsonify(output)
         resp.status_code = 200
         return resp
+    except SanitizerException as e:
+        #respond with 400, specific error message
+        raise e
     except AuthorizerException as e:
         #respond with 500, specific error message
         raise e
@@ -166,6 +179,8 @@ def register_application ():
 def register_user ():
     try:
         content = request.get_json(force=True)
+        s.Evaluate("register_user", content)
+        
         u_name = content["name"]
         u_password = content["password"]
         u_metadata = content["metadata"] if "metadata" in content else {}
@@ -176,6 +191,9 @@ def register_user ():
         resp = jsonify(output)
         resp.status_code = 200
         return resp
+    except SanitizerException as e:
+        #respond with 400, specific error message
+        raise e
     except AuthorizerException as e:
         #respond with 500, specific error message
         raise e
@@ -187,6 +205,7 @@ def register_user ():
 def retrieve_user ():
     try:
         content = request.get_json(force=True)
+        s.Evaluate("retrieve_user", content)
         
         output = auth.retrieve_username(content)
         
@@ -194,6 +213,9 @@ def retrieve_user ():
         resp = jsonify(output)
         resp.status_code = 200
         return resp
+    except SanitizerException as e:
+        #respond with 400, specific error message
+        raise e
     except AuthorizerException as e:
         #respond with 500, specific error message
         raise e
@@ -207,6 +229,8 @@ def retrieve_user ():
 def update_application ():
     try:
         content = request.get_json(force=True)
+        s.Evaluate("update_application", content)
+        
         app_id = content["id"]
         app_name = content["name"] if "name" in content else None
         app_alg = content["algorithm"] if "algorithm" in content else None
@@ -217,6 +241,9 @@ def update_application ():
         resp = jsonify({"message": output})
         resp.status_code = 200
         return resp
+    except SanitizerException as e:
+        #respond with 400, specific error message
+        raise e
     except AuthorizerException as e:
         #respond with 500, specific error message
         raise e
@@ -230,6 +257,8 @@ def update_application ():
 def update_username ():
     try:
         content = request.get_json(force=True)
+        s.Evaluate("update_username", content)
+        
         u_id = content["id"]
         u_name = content["name"]
         
@@ -239,6 +268,9 @@ def update_username ():
         resp = jsonify({"message": output})
         resp.status_code = 200
         return resp
+    except SanitizerException as e:
+        #respond with 400, specific error message
+        raise e
     except AuthorizerException as e:
         #respond with 500, specific error message
         raise e
@@ -252,6 +284,8 @@ def update_username ():
 def update_password ():
     try:
         content = request.get_json(force=True)
+        s.Evaluate("update_password", content)
+        
         u_id = content["id"]
         u_password = content["password"]
         
@@ -261,6 +295,9 @@ def update_password ():
         resp = jsonify({"message": output})
         resp.status_code = 200
         return resp
+    except SanitizerException as e:
+        #respond with 400, specific error message
+        raise e
     except AuthorizerException as e:
         #respond with 500, specific error message
         raise e
@@ -274,6 +311,8 @@ def update_password ():
 def update_metadata ():
     try:
         content = request.get_json(force=True)
+        s.Evaluate("update_metadata", content)
+        
         u_id = content["id"]
         u_metadata = content["metadata"]
         
@@ -283,6 +322,9 @@ def update_metadata ():
         resp = jsonify({"message": output})
         resp.status_code = 200
         return resp
+    except SanitizerException as e:
+        #respond with 400, specific error message
+        raise e
     except AuthorizerException as e:
         #respond with 500, specific error message
         raise e
@@ -296,6 +338,8 @@ def update_metadata ():
 def unregister_application ():
     try:
         content = request.get_json(force=True)
+        s.Evaluate("unregister_application", content)
+        
         app_id = content["id"]
         
         output = auth.unregister_application(app_id)
@@ -304,6 +348,9 @@ def unregister_application ():
         resp = jsonify({"message": output})
         resp.status_code = 200
         return resp
+    except SanitizerException as e:
+        #respond with 400, specific error message
+        raise e
     except AuthorizerException as e:
         #respond with 500, specific error message
         raise e
@@ -317,6 +364,8 @@ def unregister_application ():
 def unregister_user ():
     try:
         content = request.get_json(force=True)
+        s.Evaluate("unregister_user", content)
+        
         u_id = content["id"]
         
         output = auth.unregister_user(u_id)
@@ -325,6 +374,9 @@ def unregister_user ():
         resp = jsonify({"message": output})
         resp.status_code = 200
         return resp
+    except SanitizerException as e:
+        #respond with 400, specific error message
+        raise e
     except AuthorizerException as e:
         #respond with 500, specific error message
         raise e
