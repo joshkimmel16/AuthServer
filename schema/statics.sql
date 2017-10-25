@@ -27,12 +27,12 @@ LANGUAGE PLPGSQL;
 
 /*retrieve all assets as JSON string*/
 CREATE OR REPLACE FUNCTION get_assets (pg text)
-    RETURNS text AS
+    RETURNS table (
+        result json
+    ) AS
 $$
-DECLARE 
-    var_result text;
 BEGIN
-    SELECT row_to_json(assets) INTO var_result FROM assets WHERE page=pg;
-    RETURN var_result;
+    RETURN QUERY
+    SELECT row_to_json(assets) FROM assets WHERE assets.page=pg;
 END; $$
 LANGUAGE PLPGSQL;

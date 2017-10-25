@@ -3,6 +3,7 @@ import os
 import AuthConfig
 path.append(os.getcwd() + "\\bin")
 import AuthJwt
+import Statics
 import Helpers
 import Errors
 import Sanitizer
@@ -14,9 +15,11 @@ app = Flask(__name__)
 config = AuthConfig.Config().config
 cors = CORS(app, resources={r"/*": {"origins": "*"}})
 auth = AuthJwt.Authorizer(config)
+statics = Statics.Statics(config)
 s = Sanitizer.Sanitizer()
 AuthorizerException = AuthJwt.AuthorizerException
 SanitizerException = Sanitizer.SanitizerException
+StaticsException = Statics.StaticsException
 
 #TODO: 
 #implement server logging
@@ -33,6 +36,12 @@ def sanitizer_exception(err):
 
 @app.errorhandler(AuthorizerException)
 def authorization_exception(err):
+    resp = jsonify({"error": err.message})
+    resp.status_code = 500
+    return resp
+
+@app.errorhandler(StaticsException)
+def statics_exception(err):
     resp = jsonify({"error": err.message})
     resp.status_code = 500
     return resp
@@ -378,6 +387,59 @@ def unregister_user ():
         #respond with 400, specific error message
         raise e
     except AuthorizerException as e:
+        #respond with 500, specific error message
+        raise e
+    except Exception as e:
+        #respond with 500, generic error message
+        raise e
+        
+#creates a static asset
+@app.route("/statics/create", methods=['POST'])
+def create_asset ():
+    try:
+        content = request.get_json(force=True)
+        #s.Evaluate("create_asset", content)
+        
+        a_page = content["page"]
+        a_component = content["component"]
+        a_key = content["key"]
+        a_value = content["value"]
+        
+        output = statics.create_asset(a_page, a_component, a_key, a_value)
+        
+        #respond with 200 and output in body
+        resp = jsonify({"message": output})
+        resp.status_code = 200
+        return resp
+    except SanitizerException as e:
+        #respond with 400, specific error message
+        raise e
+    except StaticsException as e:
+        #respond with 500, specific error message
+        raise e
+    except Exception as e:
+        #respond with 500, generic error message
+        raise e
+        
+#gets all static assets for the given page
+@app.route("/statics/get", methods=['GET'])
+def get_assets ():
+    try:
+        content = request.get_json(force=True)
+        #s.Evaluate("get_assets", content)
+        
+        a_page = content["page"]
+        
+        output = statics.get_assets(a_page)
+        
+        #respond with 200 and output in body
+        resp = jsonify(output)
+        resp.status_code = 200
+        return resp
+    except SanitizerException as e:
+        #respond with 400, specific error message
+        raise e
+    except StaticsException as e:
         #respond with 500, specific error message
         raise e
     except Exception as e:

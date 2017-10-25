@@ -2,6 +2,8 @@ from Helpers import Helpers
 from DataLayer import PostGres
 from Errors import Error
 
+h = Helpers()
+
 #class defining methods to interact with static data
 class Statics:
     
@@ -22,11 +24,14 @@ class Statics:
             
     #retrieve all assets for a given page
     def get_assets (self, page):
+        def list_reduce (item):
+            return item[0]
+        
         try:
             self.data_layer.Connect(self.authConfig["server"], self.authConfig["db"], self.authConfig["user"], self.authConfig["password"])
             res = self.data_layer.ExecuteFunction('get_assets', ["string"], [page])
             self.data_layer.Disconnect()
-            return res[0][0]
+            return h.list_map(res, list_reduce)
         except Exception as e:
             raise StaticsException("Could not get the assets for the given page!", "get_assets", e)
             
