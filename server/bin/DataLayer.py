@@ -200,7 +200,7 @@ class PostGres:
                 query = ("SELECT " + func_name + "(")
                 for x in range(len(arg_types)):
                     query = query + (str(arg_vals[x]) + ",") if arg_types[x] != 'string' else query + ("'" + arg_vals[x] + "',") 
-                query = query[:-1]
+                query = query[:-1] if len(arg_types) > 0 else query
                 query = query + ");"
             except Exception as e:
                 raise DataException("Error generating query string!", "ExecuteFunction", e)
