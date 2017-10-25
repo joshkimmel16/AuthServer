@@ -386,4 +386,4 @@ def unregister_user ():
     
 #main application entry point
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=config["port"])
+    app.run(host='0.0.0.0', port=config["server"]["port"])
