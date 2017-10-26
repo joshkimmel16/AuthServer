@@ -4,6 +4,7 @@ from Errors import Error
 #TODO:
 #implement remaining sanitization methods for active routes
 #push sanitization patterns/checks into config?
+#implement method to validate usermetadata - use config?
 
 class Sanitizer:
     
@@ -19,6 +20,8 @@ class Sanitizer:
         self.funcs["update_password"] = self.update_password
         self.funcs["update_metadata"] = self.update_metadata
         self.funcs["unregister_user"] = self.unregister_user
+        self.funcs["create_asset"] = self.create_asset
+        self.funcs["get_assets"] = self.get_assets
     
     #main function to evaluate the legitimacy of inputs to a given route
     def Evaluate (self, route, body):
@@ -149,10 +152,52 @@ class Sanitizer:
                 raise SanitizerException("Missing required paramater 'id'!", "unregister_user", None)
         except Exception as e:
             raise SanitizerException("Body failed validation!", "unregister_user", e)
+            
+    #validate inputs to /statics/create
+    def create_asset (self, body):
+        try:
+            if "page" in body:
+                pg_pattern = re.compile("^[A-Za-z]+$")
+                if not isinstance(body["page"], str) or pg_pattern.match(body["page"]) is None:
+                    raise SanitizerException("Invalid value provided for parameter 'page'!", "create_asset", None)
+            else:
+                raise SanitizerException("Missing required paramater 'page'!", "create_asset", None)
+            if "component" in body:
+                comp_pattern = re.compile("^[A-Za-z]+$")
+                if not isinstance(body["component"], str) or comp_pattern.match(body["component"]) is None:
+                    raise SanitizerException("Invalid value provided for parameter 'component'!", "create_asset", None)
+            else:
+                raise SanitizerException("Missing required paramater 'component'!", "create_asset", None)
+            if "key" in body:
+                k_pattern = re.compile("^[A-Za-z]+$")
+                if not isinstance(body["key"], str) or k_pattern.match(body["key"]) is None:
+                    raise SanitizerException("Invalid value provided for parameter 'key'!", "create_asset", None)
+            else:
+                raise SanitizerException("Missing required paramater 'key'!", "create_asset", None)
+            if "value" in body:
+                if not isinstance(body["value"], str):
+                    raise SanitizerException("Invalid value provided for parameter 'value'!", "create_asset", None)
+            else:
+                raise SanitizerException("Missing required paramater 'value'!", "create_asset", None)
+        except Exception as e:
+            raise SanitizerException("Body failed validation!", "create_asset", e)
+    
+    #validate inputs to /statics/get
+    def get_assets (self, body):
+        try:
+            if "page" in body:
+                pg_pattern = re.compile("^[A-Za-z]+$")
+                if not isinstance(body["page"], str) or pg_pattern.match(body["page"]) is None:
+                    raise SanitizerException("Invalid value provided for parameter 'page'!", "get_assets", None)
+            else:
+                raise SanitizerException("Missing required paramater 'page'!", "get_assets", None)
+        except Exception as e:
+            raise SanitizerException("Body failed validation!", "get_assets", e)
     
     #helper method to ensure user metadata is well-formed
     def validate_user_metadata (self, metadata):
         pass
+    
     
 #custom sanitizer error class
 class SanitizerException (Error):

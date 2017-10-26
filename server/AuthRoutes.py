@@ -398,7 +398,7 @@ def unregister_user ():
 def create_asset ():
     try:
         content = request.get_json(force=True)
-        #s.Evaluate("create_asset", content)
+        s.Evaluate("create_asset", content)
         
         a_page = content["page"]
         a_component = content["component"]
@@ -426,7 +426,7 @@ def create_asset ():
 def get_assets ():
     try:
         content = request.get_json(force=True)
-        #s.Evaluate("get_assets", content)
+        s.Evaluate("get_assets", content)
         
         a_page = content["page"]
         

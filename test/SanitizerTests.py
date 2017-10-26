@@ -261,3 +261,107 @@ except SanitizerException as e:
     pass
 except Exception as e:
     raise e
+    
+#/statics/create
+s.Evaluate("create_asset", {"page": "testPage", "component": "testComponent", "key": "testKey", "value": "testValue"}) #valid
+try:
+    s.Evaluate("create_asset", {"component": "testComponent", "key": "testKey", "value": "testValue"}) #invalid - missing page
+    raise Exception("create_asset missing page test failed!")
+except SanitizerException as e:
+    pass
+except Exception as e:
+    raise e
+try:
+    s.Evaluate("create_asset", {"page": 1234, "component": "testComponent", "key": "testKey", "value": "testValue"}) #invalid - bad page type
+    raise Exception("create_asset invalid page type test failed!")
+except SanitizerException as e:
+    pass
+except Exception as e:
+    raise e
+try:
+    s.Evaluate("create_asset", {"page": ";DELETE FROM users;", "component": "testComponent", "key": "testKey", "value": "testValue"}) #invalid - bad page value
+    raise Exception("create_asset invalid page value test failed!")
+except SanitizerException as e:
+    pass
+except Exception as e:
+    raise e
+try:
+    s.Evaluate("create_asset", {"page": "testPage", "key": "testKey", "value": "testValue"}) #invalid - missing component
+    raise Exception("create_asset missing component test failed!")
+except SanitizerException as e:
+    pass
+except Exception as e:
+    raise e
+try:
+    s.Evaluate("create_asset", {"page": "testPage", "component": 1234, "key": "testKey", "value": "testValue"}) #invalid - bad component type
+    raise Exception("create_asset invalid component type test failed!")
+except SanitizerException as e:
+    pass
+except Exception as e:
+    raise e
+try:
+    s.Evaluate("create_asset", {"page": "testPage", "component": ";DELETE FROM users;", "key": "testKey", "value": "testValue"}) #invalid - bad component value
+    raise Exception("create_asset invalid component value test failed!")
+except SanitizerException as e:
+    pass
+except Exception as e:
+    raise e
+try:
+    s.Evaluate("create_asset", {"page": "testPage", "component": "testComponent", "value": "testValue"}) #invalid - missing asset_key
+    raise Exception("create_asset missing asset_key test failed!")
+except SanitizerException as e:
+    pass
+except Exception as e:
+    raise e
+try:
+    s.Evaluate("create_asset", {"page": "testPage", "component": "testComponent", "key": 1234, "value": "testValue"}) #invalid - bad asset_key type
+    raise Exception("create_asset invalid asset_key type test failed!")
+except SanitizerException as e:
+    pass
+except Exception as e:
+    raise e
+try:
+    s.Evaluate("create_asset", {"page": "testPage", "component": "testComponent", "key": ";DELETE FROM users;", "value": "testValue"}) #invalid - bad asset_key value
+    raise Exception("create_asset invalid asset_key value test failed!")
+except SanitizerException as e:
+    pass
+except Exception as e:
+    raise e
+try:
+    s.Evaluate("create_asset", {"page": "testPage", "component": "testComponent", "key": "testKey"}) #invalid - missing asset_value
+    raise Exception("create_asset missing asset_value test failed!")
+except SanitizerException as e:
+    pass
+except Exception as e:
+    raise e
+try:
+    s.Evaluate("create_asset", {"page": "testPage", "component": "testComponent", "key": "testKey", "value": 1234}) #invalid - bad asset_value type
+    raise Exception("create_asset invalid asset_value type test failed!")
+except SanitizerException as e:
+    pass
+except Exception as e:
+    raise e
+    
+#/statics/get
+s.Evaluate("get_assets", {"page": "testPage"}) #valid
+try:
+    s.Evaluate("get_assets", {}) #invalid - missing page
+    raise Exception("get_assets missing page test failed!")
+except SanitizerException as e:
+    pass
+except Exception as e:
+    raise e
+try:
+    s.Evaluate("get_assets", {"page": 1234}) #invalid - bad page type
+    raise Exception("get_assets invalid page type test failed!")
+except SanitizerException as e:
+    pass
+except Exception as e:
+    raise e
+try:
+    s.Evaluate("get_assets", {"page": ";DELETE FROM users;"}) #invalid - bad page value
+    raise Exception("get_assets invalid page value test failed!")
+except SanitizerException as e:
+    pass
+except Exception as e:
+    raise e
