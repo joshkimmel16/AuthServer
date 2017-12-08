@@ -7,7 +7,7 @@ import Statics
 import Helpers
 import Errors
 import Sanitizer
-from flask import Flask, request, jsonify, redirect, Response
+from flask import Flask, request, jsonify, redirect, Response, make_response
 from flask_cors import CORS
 
 #global variable initialization
@@ -98,62 +98,66 @@ def authorize_session ():
         #redirect back to user sign in page with fail param, log error
         url = config.user_signin + '?fail=app&appName=' + app_name + '&redirectUrl=' + redirect_url
         return redirect(url, code=302)
-        
+'''        
 
+#validates whether a provided username is registered
+#no need to check JWT
+#this route always responds with a 302 to either the password validation page (if success) or back to username validation page (if failure) 
 @app.route("/authorize/user", methods=['POST'])
 def authorize_user ():
     content = request.get_json(force=True)
     username = content['username']
-    app_name = content['app_name']
-    redirect_url = request.args.get('redirectUrl')
+    app_id = content['app_id']
+    redirect_url = content['redirect_url']
     try:
         check = auth.authorize_username(username)
-        if check is True:
+        if check["valid"] is True:
             #user has been authorized, so redirect to password auth page
-            url = config.password_signin + '?username=' + username + '&appName=' + app_name + '&redirectUrl=' + redirect_url
+            url = config["auth"]["password_signin"] + '?userid=' + str(check["id"]) + '&appId=' + str(app_id) + '&redirectUrl=' + redirect_url
             return redirect(url, code=302)
         else:
             #user failed authorization, so redirect back to user sign in page with fail param
-            url = config.user_signin + '?fail=user&appName=' + app_name + '&redirectUrl=' + redirect_url
+            url = config["auth"]["user_signin"] + '?fail=user&appId=' + str(app_id) + '&redirectUrl=' + redirect_url
             return redirect(url, code=302)
     except AuthorizerException as e:
         #redirect back to user sign in page with fail param, log error
-        url = config.user_signin + '?fail=app&appName=' + app_name + '&redirectUrl=' + redirect_url
+        url = config["auth"]["user_signin"] + '?fail=app&appId=' + str(app_id) + '&redirectUrl=' + redirect_url
         return redirect(url, code=302)
     except Exception as e:
         #redirect back to user sign in page with fail param, log error
-        url = config.user_signin + '?fail=app&appName=' + app_name + '&redirectUrl=' + redirect_url
+        url = config["auth"]["user_signin"] + '?fail=app&appId=' + str(app_id) + '&redirectUrl=' + redirect_url
         return redirect(url, code=302)
 
-
+#validates whether a provided password is correct for the provided username
+#no need to check JWT
+#this route always responds with a 302 to either the provided redirect URL (if success) or back to username validation page (if failure) 
 @app.route("/authorize/password", methods=['POST'])
 def authorize_password ():
     content = request.get_json(force=True)
-    username = content['username']
+    user_id = content['user_id']
     password = content['password']
-    app_name = content['app_name']
-    redirect_url = request.args.get('redirectUrl')
+    app_id = content['app_id']
+    redirect_url = content['redirect_url']
     try:
-        check = auth.authorize_username(username, password)
-        if check[0] is True:
+        check = auth.authorize_password(user_id, password)
+        if check["valid"] is True:
             #password is correct, so redirect to provided redirect URL and set cookie containing JWT and pass along usermetadata
-            jwt = auth.provision_jwt(app_name, username)
-            response.set_cookie('jwt', value=jwt)
-            url = redirect_url + '&usermetadata=' + check[1]
-            return redirect(url, code=302)
+            jwt = auth.provision_jwt(app_id, user_id)
+            response = make_response(redirect(redirect_url))
+            response.set_cookie('jwt', jwt)
+            return response
         else:
             #user failed authorization, so redirect back to user sign in page with fail param
-            url = config.user_signin + '?fail=password&redirectUrl=' + redirect_url
+            url = config["auth"]["user_signin"] + '?fail=password&appId=' + str(app_id) + '&redirectUrl=' + redirect_url
             return redirect(url, code=302)
     except AuthorizerException as e:
         #redirect back to user sign in page with fail param, log error
-        url = config.user_signin + '?fail=app&redirectUrl=' + redirect_url
+        url = config["auth"]["user_signin"] + '?fail=app&appId=' + str(app_id) + '&redirectUrl=' + redirect_url
         return redirect(url, code=302)
     except Exception as e:
         #redirect back to user sign in page with fail param, log error
-        url = config.user_signin + '?fail=app&redirectUrl=' + redirect_url
+        url = config["auth"]["user_signin"] + '?fail=app&appId=' + str(app_id) + '&redirectUrl=' + redirect_url
         return redirect(url, code=302)
-'''        
 
 #registers an application
 #no need to check JWT for this route
