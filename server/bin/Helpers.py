@@ -156,6 +156,13 @@ class Helpers:
         except Exception as e:
             raise HelperException("Error mapping the provided list using the provided function!", "list_map", e)
             
+    #checks whether the provided URL contains a query string
+    def check_url(self, url):
+        try:
+            return "?" in url
+        except Exception as e:
+            raise HelperException("Error checking the provided URL for a query string!", "check_url", e)
+            
 #custom Authorizer errors
 class HelperException (Error):
     pass

@@ -11,6 +11,8 @@ class Sanitizer:
     #constructor
     def __init__ (self):
         self.funcs = {}
+        self.funcs["authorize_user"] = self.authorize_user
+        self.funcs["authorize_password"] = self.authorize_password
         self.funcs["register_application"] = self.register_application
         self.funcs["update_application"] = self.update_application
         self.funcs["unregister_application"] = self.unregister_application
@@ -29,6 +31,57 @@ class Sanitizer:
             return self.funcs[route](body)
         else:
             raise SanitizerException("The requested route does not have an implemented validator!", "Evaluate", None)
+            
+    #validate inputs to /authorize/user
+    def authorize_user (self, body):
+        try:
+            if 'username' in body:
+                name_pattern = re.compile("^[A-Za-z0-9\.]+$")
+                if not isinstance(body["username"], str) or name_pattern.match(body["username"]) is None:
+                    raise SanitizerException("Invalid value provided for parameter 'username'!", "authorize_user", None)
+            else:
+                raise SanitizerException("Missing required paramater 'username'!", "authorize_user", None)
+            if 'app_id' in body:
+                if not isinstance(body["app_id"], int) or body["app_id"] < 1:
+                    raise SanitizerException("Invalid value provided for parameter 'app_id'!", "authorize_user", None)
+            else:
+                raise SanitizerException("Missing required paramater 'app_id'!", "authorize_user", None)
+            if 'redirect_url' in body:
+                url_pattern = re.compile(r"https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&\/=]*)")
+                if not isinstance(body["redirect_url"], str) or url_pattern.match(body["redirect_url"]) is None:
+                    raise SanitizerException("Invalid value provided for parameter 'redirect_url'!", "authorize_user", None)
+            else:
+                raise SanitizerException("Missing required paramater 'redirect_url'!", "authorize_user", None)
+        except Exception as e:
+            raise SanitizerException("Body failed validation!", "authorize_user", e)
+            
+    #validate inputs to /authorize/user
+    def authorize_password (self, body):
+        try:
+            if 'user_id' in body:
+                if not isinstance(body["user_id"], int) or body["user_id"] < 1:
+                    raise SanitizerException("Invalid value provided for parameter 'user_id'!", "authorize_password", None)
+            else:
+                raise SanitizerException("Missing required paramater 'user_id'!", "authorize_password", None)
+            if "password" in body:
+                pass_pattern = re.compile("^[A-Za-z0-9!@#\$%\^\&\*\(\)]+$")
+                if not isinstance(body["password"], str) or pass_pattern.match(body["password"]) is None:
+                    raise SanitizerException("Invalid value provided for parameter 'password'!", "authorize_password", None)
+            else:
+                raise SanitizerException("Missing required paramater 'password'!", "register_user", None)
+            if 'app_id' in body:
+                if not isinstance(body["app_id"], int) or body["app_id"] < 1:
+                    raise SanitizerException("Invalid value provided for parameter 'app_id'!", "authorize_password", None)
+            else:
+                raise SanitizerException("Missing required paramater 'app_id'!", "authorize_password", None)
+            if 'redirect_url' in body:
+                url_pattern = re.compile(r"https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&\/=]*)")
+                if not isinstance(body["redirect_url"], str) or url_pattern.match(body["redirect_url"]) is None:
+                    raise SanitizerException("Invalid value provided for parameter 'redirect_url'!", "authorize_password", None)
+            else:
+                raise SanitizerException("Missing required paramater 'redirect_url'!", "authorize_password", None)
+        except Exception as e:
+            raise SanitizerException("Body failed validation!", "authorize_password", e)
     
     #validate inputs to /register/application
     def register_application (self, body):

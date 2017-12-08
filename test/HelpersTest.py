@@ -67,3 +67,9 @@ def caps (s):
     return s.upper()
 l5 = ["snap", "crackle", "pop"]
 print (h.list_map(l5, caps))
+
+#check_url
+url1 = "http://test.laserfiche.com?rage=true&boom=false"
+url2 = "http://test.laserfiche.com"
+if h.check_url(url1) is False or h.check_url(url2) is True:
+    raise Exception("Test failed! Method: check_url")

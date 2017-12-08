@@ -365,3 +365,156 @@ except SanitizerException as e:
     pass
 except Exception as e:
     raise e
+    
+#/authorize/user
+s.Evaluate("authorize_user", {"username": "test.user", "app_id": 1, "redirect_url": "http://v-lsg-lfstest.laserfiche.com"})
+try:
+    s.Evaluate("authorize_user", {"app_id": 1, "redirect_url": "http://v-lsg-lfstest.laserfiche.com"}) #invalid - missing username
+    raise Exception("authorize_user missing username test failed!")
+except SanitizerException as e:
+    pass
+except Exception as e:
+    raise e
+try:
+    s.Evaluate("authorize_user", {"username": 12345, "app_id": 1, "redirect_url": "http://v-lsg-lfstest.laserfiche.com"}) #invalid - bad username type
+    raise Exception("authorize_user invalid username type test failed!")
+except SanitizerException as e:
+    pass
+except Exception as e:
+    raise e
+try:
+    s.Evaluate("authorize_user", {"username": ";DELETE FROM users;", "app_id": 1, "redirect_url": "http://v-lsg-lfstest.laserfiche.com"}) #invalid - bad username value
+    raise Exception("authorize_user invalid username value test failed!")
+except SanitizerException as e:
+    pass
+except Exception as e:
+    raise e
+try:
+    s.Evaluate("authorize_user", {"username": "test.user", "redirect_url": "http://v-lsg-lfstest.laserfiche.com"}) #invalid - missing app_id
+    raise Exception("authorize_user missing app_id test failed!")
+except SanitizerException as e:
+    pass
+except Exception as e:
+    raise e
+try:
+    s.Evaluate("authorize_user", {"username": "test.user", "app_id": "skjfksjn", "redirect_url": "http://v-lsg-lfstest.laserfiche.com"}) #invalid - bad app_id type
+    raise Exception("authorize_user invalid app_id type test failed!")
+except SanitizerException as e:
+    pass
+except Exception as e:
+    raise e
+try:
+    s.Evaluate("authorize_user", {"username": "josh.kimmel", "app_id": -56, "redirect_url": "http://v-lsg-lfstest.laserfiche.com"}) #invalid - bad app_id value
+    raise Exception("authorize_user invalid app_id value test failed!")
+except SanitizerException as e:
+    pass
+except Exception as e:
+    raise e
+try:
+    s.Evaluate("authorize_user", {"username": "test.user", "app_id": 1}) #invalid - missing redirect_url
+    raise Exception("authorize_user missing redirect_url test failed!")
+except SanitizerException as e:
+    pass
+except Exception as e:
+    raise e
+try:
+    s.Evaluate("authorize_user", {"username": "test.user", "app_id": 1, "redirect_url": 1234}) #invalid - bad redirect_url type
+    raise Exception("authorize_user invalid redirect_url type test failed!")
+except SanitizerException as e:
+    pass
+except Exception as e:
+    raise e
+try:
+    s.Evaluate("authorize_user", {"username": "test.user", "app_id": 1, "redirect_url": ";DELETE FROM users;"}) #invalid - bad redirect_url value
+    raise Exception("authorize_user invalid redirect_url value test failed!")
+except SanitizerException as e:
+    pass
+except Exception as e:
+    raise e
+    
+#/authorize/password
+s.Evaluate("authorize_password", {"user_id": 1, "password": "testing", "app_id": 1, "redirect_url": "http://v-lsg-lfstest.laserfiche.com"})
+try:
+    s.Evaluate("authorize_password", {"password": "testing", "app_id": 1, "redirect_url": "http://v-lsg-lfstest.laserfiche.com"}) #invalid - missing user_id
+    raise Exception("authorize_password missing user_id test failed!")
+except SanitizerException as e:
+    pass
+except Exception as e:
+    raise e
+try:
+    s.Evaluate("authorize_password", {"user_id": "jkfdkjsn", "password": "testing", "app_id": 1, "redirect_url": "http://v-lsg-lfstest.laserfiche.com"}) #invalid - bad user_id type
+    raise Exception("authorize_password invalid user_id type test failed!")
+except SanitizerException as e:
+    pass
+except Exception as e:
+    raise e
+try:
+    s.Evaluate("authorize_password", {"user_id": 0, "password": "testing", "app_id": 1, "redirect_url": "http://v-lsg-lfstest.laserfiche.com"}) #invalid - bad user_id value
+    raise Exception("authorize_password invalid username value test failed!")
+except SanitizerException as e:
+    pass
+except Exception as e:
+    raise e
+try:
+    s.Evaluate("authorize_password", {"user_id": 1, "password": "testing", "redirect_url": "http://v-lsg-lfstest.laserfiche.com"}) #invalid - missing app_id
+    raise Exception("authorize_password missing app_id test failed!")
+except SanitizerException as e:
+    pass
+except Exception as e:
+    raise e
+try:
+    s.Evaluate("authorize_password", {"user_id": 1, "password": "testing", "app_id": "skjfksjn", "redirect_url": "http://v-lsg-lfstest.laserfiche.com"}) #invalid - bad app_id type
+    raise Exception("authorize_password invalid app_id type test failed!")
+except SanitizerException as e:
+    pass
+except Exception as e:
+    raise e
+try:
+    s.Evaluate("authorize_password", {"user_id": 1, "password": "testing", "app_id": -56, "redirect_url": "http://v-lsg-lfstest.laserfiche.com"}) #invalid - bad app_id value
+    raise Exception("authorize_password invalid app_id value test failed!")
+except SanitizerException as e:
+    pass
+except Exception as e:
+    raise e
+try:
+    s.Evaluate("authorize_password", {"user_id": 1, "password": "testing", "app_id": 1}) #invalid - missing redirect_url
+    raise Exception("authorize_password missing redirect_url test failed!")
+except SanitizerException as e:
+    pass
+except Exception as e:
+    raise e
+try:
+    s.Evaluate("authorize_password", {"user_id": 1, "password": "testing", "app_id": 1, "redirect_url": 1234}) #invalid - bad redirect_url type
+    raise Exception("authorize_password invalid redirect_url type test failed!")
+except SanitizerException as e:
+    pass
+except Exception as e:
+    raise e
+try:
+    s.Evaluate("authorize_password", {"user_id": 1, "password": "testing", "app_id": 1, "redirect_url": ";DELETE FROM users;"}) #invalid - bad redirect_url value
+    raise Exception("authorize_password invalid redirect_url value test failed!")
+except SanitizerException as e:
+    pass
+except Exception as e:
+    raise e
+try:
+    s.Evaluate("authorize_password", {"user_id": 1, "app_id": 1, "redirect_url": "http://v-lsg-lfstest.laserfiche.com"}) #invalid - missing password
+    raise Exception("authorize_password missing password test failed!")
+except SanitizerException as e:
+    pass
+except Exception as e:
+    raise e
+try:
+    s.Evaluate("authorize_password", {"user_id": 1, "password": 1234, "app_id": 1, "redirect_url": "http://v-lsg-lfstest.laserfiche.com"}) #invalid - bad password type
+    raise Exception("authorize_password invalid password type test failed!")
+except SanitizerException as e:
+    pass
+except Exception as e:
+    raise e
+try:
+    s.Evaluate("authorize_password", {"user_id": 1, "password": ";DELETE FROM users;", "app_id": 1, "redirect_url": "http://v-lsg-lfstest.laserfiche.com"}) #invalid - bad password value
+    raise Exception("authorize_password invalid password value test failed!")
+except SanitizerException as e:
+    pass
+except Exception as e:
+    raise e
