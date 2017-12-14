@@ -1,0 +1,79 @@
+.hide {
+    display: none !important;
+}
+
+.header {
+    width: 100%;
+    height: 10%;
+    position: fixed;
+    background-color: #FFF0F5;
+}
+
+.title {
+    font-size: 36px;
+    font-family: "Times", Georgia, Serif;
+    color: #663399;
+    position: relative;
+    left: 34%;
+    top: 20%;
+}
+
+.logo {
+    width: 10%;
+    height: 100%;
+    position: relative;
+    left: 5%;
+}
+
+.background {
+    -ms-transform: translate(0%, 11%); /* IE 9 */
+    -webkit-transform: translate(0%, 11%); /* Safari */
+    transform: translate(0%, 11%);
+    width: 100%;
+    height: 90%;
+}
+
+.dialog {
+    position: relative;
+    -ms-transform: translate(20%, 35%); /* IE 9 */
+    -webkit-transform: translate(20%, 35%); /* Safari */
+    transform: translate(20%, 35%);
+    width: 40%;
+    height: 60%;
+}
+
+.description {
+    position: relative;
+    -ms-transform: translate(0%, 0%); /* IE 9 */
+    -webkit-transform: translate(0%, 0%); /* Safari */
+    transform: translate(0%, 0%);
+}
+
+.label {
+    position: relative;
+    -ms-transform: translate(0%, 15%); /* IE 9 */
+    -webkit-transform: translate(0%, 15%); /* Safari */
+    transform: translate(0%, 15%);
+}
+
+.userInput {
+    position: relative;
+    -ms-transform: translate(0%, 30%); /* IE 9 */
+    -webkit-transform: translate(0%, 30%); /* Safari */
+    transform: translate(0%, 30%);
+}
+
+.errorText {
+    position: relative;
+    -ms-transform: translate(0%, 45%); /* IE 9 */
+    -webkit-transform: translate(0%, 45%); /* Safari */
+    transform: translate(0%, 35%);
+}
+
+.submit {
+    position: relative;
+    -ms-transform: translate(0%, 60%); /* IE 9 */
+    -webkit-transform: translate(0%, 60%); /* Safari */
+    transform: translate(0%, 60%);
+}
+

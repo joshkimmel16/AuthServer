@@ -1,16 +1,31 @@
 // App.jsx
 const React = require("react");
 const Header = require("./components/Header.jsx");
+const UserLogin = require("./components/LoginDialog.jsx");
 const data = {
-  title: "User Login",
-  logo: "/styles/img/logo.png"
+  header: {
+      title: "User Login",
+      logo: "/dist/248f90e02f291ea0913c525495353369.jpg"   
+  },
+  body: {
+      type: "text",
+      inputLabel: "User Name:",
+      inputRegex: /^[A-Za-z0-9\.]+$/,
+      message: "Please enter your user name below.",
+      submitText: "Submit",
+      errorText: "Invalid user name. A valid name must contain only alphanumeric characters and/or '.'.",
+      action: "/authorize/user",
+      failMessage: "Could not verify user name! Please ensure you have entered the correct information.",
+      successMessage: "User name verified!"
+  }
 };
 
 class App extends React.Component {
   constructor() {
         super();
         this.state = {
-            header: data
+            header: data.header,
+            body: data.body
         };
   }
     
@@ -21,10 +36,25 @@ class App extends React.Component {
         />
   }
     
+  renderDialog () {
+      return <UserLogin
+           type={this.state.body.type}
+           inputLabel={this.state.body.inputLabel}
+           inputRegex={this.state.body.inputRegex}
+           message={this.state.body.message}
+           submitText={this.state.body.submitText}
+           errorText={this.state.body.errorText}
+           action={this.state.body.action}
+           failMessage={this.state.body.failMessage}
+           successMessage={this.state.body.successMessage}
+      />
+  }
+    
   render () {
     return (
             <div className='main'>
                 {this.renderHeader()}
+                {this.renderDialog()}
             </div>
         )
   }

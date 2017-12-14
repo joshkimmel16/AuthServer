@@ -9,6 +9,8 @@ const App = require("./App");
 
 //styling and resource dependencies
 require('bootstrap/dist/css/bootstrap.min.css');
+require('../styles/userLogin.css');
 require('../styles/img/favicon.ico');
+require('../styles/img/knight.jpg');
 
 ReactDOM.render(<App />, document.getElementById("content"));
