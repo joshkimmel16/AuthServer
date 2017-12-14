@@ -7,11 +7,11 @@ import Statics
 import Helpers
 import Errors
 import Sanitizer
-from flask import Flask, request, jsonify, redirect, Response, make_response
+from flask import Flask, request, jsonify, redirect, Response, make_response, render_template
 from flask_cors import CORS
 
 #global variable initialization
-app = Flask(__name__)
+app = Flask(__name__, static_folder="../web/dist", template_folder="../web")
 config = AuthConfig.Config().config
 cors = CORS(app, resources={r"/*": {"origins": "*"}})
 auth = AuthJwt.Authorizer(config)
@@ -63,43 +63,53 @@ def route_not_found(err):
 def method_not_allowed(err):
     resp = jsonify({"error": "The provided method is not valid for the given route!"})
     resp.status_code = 405
-    return resp
+    return resp 
 
-'''
-@app.route("/authorize/session", methods=['GET'])
+#get static web resources
+@app.route('/dist/<path:path>', methods=['GET'])
+def send_resource(path):
+    return path
+
+#user login web page
+@app.route("/login/user", methods=['GET'])
+def index ():
+    return render_template("index.html")
+
+@app.route("/authorize/session", methods=['POST'])
 def authorize_session ():
     #check for JWT cookie
     jwt = request.cookies['jwt']
-    app_name = request.args.get('appName')
-    redirect_url = request.args.get('redirectUrl')
+    content = request.get_json(force=True)
+    app_id = content['app_id']
+    redirect_url = content['redirect_url']
     
     try:
         #if there:
         if jwt is not None:
-            #check if expired
-            token = auth.decrypt_token(jwt, app_name)
+            #check if signature is valid and not expired
+            token = auth.decrypt_token(jwt, app_id)
             check = auth.check_token_expiration(token['payload'])
-            #if yes, redirect to user sign in page (passing along redirect URL)
+            #if yes, redirect back with fail param
             if check is False:
-                url = config.user_signin + '?appName=' + app_name + '&redirectUrl=' + redirect_url
+                url = redirect_url + '?fail=token&appId=' + str(app_id) if h.check_url(redirect_url) is False else redirect_url + '&fail=token&appId=' + str(app_id)
                 return redirect(url, code=302)
             #if no, redirect directly to provided URL
             else:
-                return redirect(redirect_url, code=302)
+                url = redirect_url
+                return redirect(url, code=302)
         #if not there:
         else:
-            #redirect to user sign in page (passing along redirect URL)
-            url = config.user_signin + '?appName=' + app_name + '&redirectUrl=' + redirect_url
+            #missing token, so redirect back with fail param
+            url = redirect_url + '?fail=token&appId=' + str(app_id) if h.check_url(redirect_url) is False else redirect_url + '&fail=token&appId=' + str(app_id)
             return redirect(url, code=302)
     except AuthorizerException as e:
-        #redirect back to user sign in page with fail param, log error
-        url = config.user_signin + '?fail=app&appName=' + app_name + '&redirectUrl=' + redirect_url
+        #redirect back with fail param, log error
+        url = redirect_url + '?fail=token&appId=' + str(app_id) if h.check_url(redirect_url) is False else redirect_url + '&fail=token&appId=' + str(app_id)
         return redirect(url, code=302)
     except Exception as e:
-        #redirect back to user sign in page with fail param, log error
-        url = config.user_signin + '?fail=app&appName=' + app_name + '&redirectUrl=' + redirect_url
-        return redirect(url, code=302)
-'''        
+        #redirect back with fail param, log error
+        url = redirect_url + '?fail=app&appId=' + str(app_id) if h.check_url(redirect_url) is False else redirect_url + '&fail=app&appId=' + str(app_id)
+        return redirect(url, code=302)  
 
 #validates whether a provided username is registered
 #no need to check JWT
@@ -116,22 +126,23 @@ def authorize_user ():
         check = auth.authorize_username(username)
         if check["valid"] is True:
             #user has been authorized, so redirect to password auth page
-            url = config["auth"]["password_signin"] + '?userid=' + str(check["id"]) + '&appId=' + str(app_id) + '&redirectUrl=' + redirect_url
+            url = redirect_url + '?userid=' + str(check["id"]) + '&appId=' + str(app_id) if h.check_url(redirect_url) is False else redirect_url + '&fuserid=' + str(check["id"]) + '&appId=' + str(app_id)
             return redirect(url, code=302)
         else:
             #user failed authorization, so redirect back with fail param
             url = redirect_url + '?fail=user&appId=' + str(app_id) if h.check_url(redirect_url) is False else redirect_url + '&fail=user&appId=' + str(app_id)
             return redirect(url, code=302)
     except SanitizerException as e:
-        #respond with 400, specific error message
-        raise e
+        #redirect back with fail param, log error
+        url = redirect_url + '?fail=req&appId=' + str(app_id) if h.check_url(redirect_url) is False else redirect_url + '&fail=req&appId=' + str(app_id)
+        return redirect(url, code=302)
     except AuthorizerException as e:
         #redirect back with fail param, log error
-        url = redirect_url + '?fail=user&appId=' + str(app_id) if h.check_url(redirect_url) is False else redirect_url + '&fail=user&appId=' + str(app_id)
+        url = redirect_url + '?fail=app&appId=' + str(app_id) if h.check_url(redirect_url) is False else redirect_url + '&fail=app&appId=' + str(app_id)
         return redirect(url, code=302)
     except Exception as e:
         #redirect back with fail param, log error
-        url = redirect_url + '?fail=user&appId=' + str(app_id) if h.check_url(redirect_url) is False else redirect_url + '&fail=user&appId=' + str(app_id)
+        url = redirect_url + '?fail=app&appId=' + str(app_id) if h.check_url(redirect_url) is False else redirect_url + '&fail=app&appId=' + str(app_id)
         return redirect(url, code=302)
 
 #validates whether a provided password is correct for the provided username
@@ -156,18 +167,19 @@ def authorize_password ():
             return response
         else:
             #user failed authorization, so redirect back with fail param
-            url = redirect_url + '?fail=user&appId=' + str(app_id) if h.check_url(redirect_url) is False else redirect_url + '&fail=user&appId=' + str(app_id)
+            url = redirect_url + '?fail=password&appId=' + str(app_id) if h.check_url(redirect_url) is False else redirect_url + '&fail=password&appId=' + str(app_id)
             return redirect(url, code=302)
     except SanitizerException as e:
-        #respond with 400, specific error message
-        raise e
+        #redirect back with fail param, log error
+        url = redirect_url + '?fail=req&appId=' + str(app_id) if h.check_url(redirect_url) is False else redirect_url + '&fail=req&appId=' + str(app_id)
+        return redirect(url, code=302)
     except AuthorizerException as e:
         #redirect back with fail param, log error
-        url = redirect_url + '?fail=user&appId=' + str(app_id) if h.check_url(redirect_url) is False else redirect_url + '&fail=user&appId=' + str(app_id)
+        url = redirect_url + '?fail=app&appId=' + str(app_id) if h.check_url(redirect_url) is False else redirect_url + '&fail=app&appId=' + str(app_id)
         return redirect(url, code=302)
     except Exception as e:
         #redirect back with fail param, log error
-        url = redirect_url + '?fail=user&appId=' + str(app_id) if h.check_url(redirect_url) is False else redirect_url + '&fail=user&appId=' + str(app_id)
+        url = redirect_url + '?fail=app&appId=' + str(app_id) if h.check_url(redirect_url) is False else redirect_url + '&fail=app&appId=' + str(app_id)
         return redirect(url, code=302)
 
 #registers an application
