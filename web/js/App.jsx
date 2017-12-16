@@ -16,7 +16,8 @@ const data = {
       errorText: "Invalid user name. A valid name must contain only alphanumeric characters and/or '.'.",
       action: "/authorize/user",
       failMessage: "Could not verify user name! Please ensure you have entered the correct information.",
-      successMessage: "User name verified!"
+      successMessage: "User name verified!",
+      appId: 1
   }
 };
 
@@ -47,6 +48,7 @@ class App extends React.Component {
            action={this.state.body.action}
            failMessage={this.state.body.failMessage}
            successMessage={this.state.body.successMessage}
+           appId={this.state.body.appId}
       />
   }
     

@@ -12,5 +12,6 @@ require('bootstrap/dist/css/bootstrap.min.css');
 require('../styles/userLogin.css');
 require('../styles/img/favicon.ico');
 require('../styles/img/knight.jpg');
+require('../styles/img/steel_background.jpg');
 
 ReactDOM.render(<App />, document.getElementById("content"));
