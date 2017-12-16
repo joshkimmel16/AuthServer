@@ -116,13 +116,13 @@ def authorize_session ():
 #this route always responds with a 302 to either the password validation page (if success) or back to username validation page (if failure)
 @app.route("/authorize/user", methods=['POST'])
 def authorize_user ():
-    content = request.get_json(force=True)
-    s.Evaluate("authorize_user", content)
-    
-    username = content['username']
-    app_id = content['app_id']
-    redirect_url = content['redirect_url']
     try:
+        content = request.get_json(force=True)
+        username = content['username']
+        app_id = content['app_id']
+        redirect_url = content['redirect_url']
+        
+        s.Evaluate("authorize_user", content)
         check = auth.authorize_username(username)
         if check["valid"] is True:
             #user has been authorized, so redirect to password auth page
@@ -133,31 +133,29 @@ def authorize_user ():
             url = redirect_url + '?fail=user&appId=' + str(app_id) if h.check_url(redirect_url) is False else redirect_url + '&fail=user&appId=' + str(app_id)
             return redirect(url, code=302)
     except SanitizerException as e:
-        #redirect back with fail param, log error
-        url = redirect_url + '?fail=req&appId=' + str(app_id) if h.check_url(redirect_url) is False else redirect_url + '&fail=req&appId=' + str(app_id)
-        return redirect(url, code=302)
+        #can't assume the redirect URL was OK so respond with 400, log error
+        raise e
     except AuthorizerException as e:
         #redirect back with fail param, log error
         url = redirect_url + '?fail=app&appId=' + str(app_id) if h.check_url(redirect_url) is False else redirect_url + '&fail=app&appId=' + str(app_id)
         return redirect(url, code=302)
     except Exception as e:
-        #redirect back with fail param, log error
-        url = redirect_url + '?fail=app&appId=' + str(app_id) if h.check_url(redirect_url) is False else redirect_url + '&fail=app&appId=' + str(app_id)
-        return redirect(url, code=302)
+        #can't assume the redirect URL was OK so respond with 500, log error
+        raise e
 
 #validates whether a provided password is correct for the provided username
 #no need to check JWT
 #this route always responds with a 302 to either the provided redirect URL (if success) or back to username validation page (if failure)
 @app.route("/authorize/password", methods=['POST'])
 def authorize_password ():
-    content = request.get_json(force=True)
-    s.Evaluate("authorize_password", content)
-    
-    user_id = content['user_id']
-    password = content['password']
-    app_id = content['app_id']
-    redirect_url = content['redirect_url']
     try:
+        content = request.get_json(force=True)
+        s.Evaluate("authorize_password", content)
+
+        user_id = content['user_id']
+        password = content['password']
+        app_id = content['app_id']
+        redirect_url = content['redirect_url']
         check = auth.authorize_password(user_id, password)
         if check["valid"] is True:
             #password is correct, so redirect to provided redirect URL and set cookie containing JWT and pass along usermetadata
@@ -170,17 +168,15 @@ def authorize_password ():
             url = redirect_url + '?fail=password&appId=' + str(app_id) if h.check_url(redirect_url) is False else redirect_url + '&fail=password&appId=' + str(app_id)
             return redirect(url, code=302)
     except SanitizerException as e:
-        #redirect back with fail param, log error
-        url = redirect_url + '?fail=req&appId=' + str(app_id) if h.check_url(redirect_url) is False else redirect_url + '&fail=req&appId=' + str(app_id)
-        return redirect(url, code=302)
+        #can't assume the redirect URL was OK so respond with 400, log error
+        raise e
     except AuthorizerException as e:
         #redirect back with fail param, log error
         url = redirect_url + '?fail=app&appId=' + str(app_id) if h.check_url(redirect_url) is False else redirect_url + '&fail=app&appId=' + str(app_id)
         return redirect(url, code=302)
     except Exception as e:
-        #redirect back with fail param, log error
-        url = redirect_url + '?fail=app&appId=' + str(app_id) if h.check_url(redirect_url) is False else redirect_url + '&fail=app&appId=' + str(app_id)
-        return redirect(url, code=302)
+        #can't assume the redirect URL was OK so respond with 500, log error
+        raise e
 
 #registers an application
 #no need to check JWT for this route
