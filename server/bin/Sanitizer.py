@@ -47,7 +47,7 @@ class Sanitizer:
             else:
                 raise SanitizerException("Missing required paramater 'app_id'!", "authorize_user", None)
             if 'redirect_url' in body:
-                url_pattern = re.compile(r"https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&\/=]*)")
+                url_pattern = re.compile(r"^https?\:\/\/[\w\-_]+(\.\w+)*(\:\d+)?(\/\w+)*(\?.+=.+(&)?)?$")
                 if not isinstance(body["redirect_url"], str) or url_pattern.match(body["redirect_url"]) is None:
                     raise SanitizerException("Invalid value provided for parameter 'redirect_url'!", "authorize_user", None)
             else:
@@ -75,7 +75,7 @@ class Sanitizer:
             else:
                 raise SanitizerException("Missing required paramater 'app_id'!", "authorize_password", None)
             if 'redirect_url' in body:
-                url_pattern = re.compile(r"https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&\/=]*)")
+                url_pattern = re.compile(r"^https?\:\/\/[\w\-_]+(\.\w+)*(\:\d+)?(\/\w+)*(\?.+=.+(&)?)?$")
                 if not isinstance(body["redirect_url"], str) or url_pattern.match(body["redirect_url"]) is None:
                     raise SanitizerException("Invalid value provided for parameter 'redirect_url'!", "authorize_password", None)
             else:
