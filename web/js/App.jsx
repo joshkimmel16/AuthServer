@@ -17,6 +17,7 @@ const data = {
       action: "/authorize/user",
       failMessage: "Could not verify user name! Please ensure you have entered the correct information.",
       successMessage: "User name verified!",
+      modalState: 0,
       appId: 1
   }
 };
@@ -28,6 +29,24 @@ class App extends React.Component {
             header: data.header,
             body: data.body
         };
+  }
+    
+  componentDidMount () {
+      var query = window.location.search.substring(1);
+      var vars = query.split('&');
+      var check = null;
+      for (var i = 0; i < vars.length; i++) {
+        var pair = vars[i].split('=');
+        if (decodeURIComponent(pair[0]) == "fail") {
+            check = decodeURIComponent(pair[1]);
+        }
+      }
+
+      if (check !== null) {
+          var tempState = this.state.body;
+          tempState.modalState = -1;
+          this.setState({body: tempState});
+      }
   }
     
   renderHeader () {
@@ -48,6 +67,7 @@ class App extends React.Component {
            action={this.state.body.action}
            failMessage={this.state.body.failMessage}
            successMessage={this.state.body.successMessage}
+           modalState={this.state.body.modalState}
            appId={this.state.body.appId}
       />
   }

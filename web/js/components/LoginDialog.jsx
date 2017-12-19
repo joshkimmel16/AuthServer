@@ -17,7 +17,7 @@ class LoginDialog extends React.Component {
             action: options.action || "",
             failMessage: options.failMessage || "",
             successMessage: options.successMessage || "",
-            modalState: 0,
+            modalState: options.modalState || 0,
             appId: options.appId || 0
         };
     }
@@ -50,8 +50,8 @@ class LoginDialog extends React.Component {
         return context.checkValidity()
             .then(function () {
                 if (context.state.valid === true) {
-                    var payload = {username: context.state.value, app_id: context.state.appId, redirect_url: window.location.href};
-                    axios.post(context.state.action, payload)
+                    var payload = {username: context.state.value, app_id: context.state.appId, redirect_url: window.location.href.split(/[?#]/)[0]};
+                    axios.post(context.state.action, payload, {headers: {"X-Requested-With": "AJAX"}})
                         .then(function(response) { context.handleResponse(response); })
                         .catch(function(error) { context.handleResponse(error.response); });
                 }
@@ -61,8 +61,9 @@ class LoginDialog extends React.Component {
     //handle various responses from server-side validation
     handleResponse (response) {
         var context = this;
-        if (response.status === 302) {
-            context.setState({modalState: 1});
+        if (response.status === 200) {
+            var target = response.data.url;
+            window.location.href = target;
         }
         else if (response.status >= 400) {
             context.setState({failMessage: context.state.failMessage + ' Error: ' + response.data.error, modalState: -1});
