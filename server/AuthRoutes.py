@@ -113,10 +113,10 @@ def authorize_session ():
 
 #validates whether a provided username is registered
 #no need to check JWT
-#this route always responds with a 302 to either the password validation page (if success) or back to username validation page (if failure)
 @app.route("/authorize/user", methods=['POST'])
 def authorize_user ():
     try:
+        ajax_check = True if request.headers.get("X-Requested-With") == "AJAX" else False
         content = request.get_json(force=True)
         username = content['username']
         app_id = content['app_id']
@@ -125,13 +125,29 @@ def authorize_user ():
         s.Evaluate("authorize_user", content)
         check = auth.authorize_username(username)
         if check["valid"] is True:
-            #user has been authorized, so redirect to password auth page
-            url = redirect_url + '?userid=' + str(check["id"]) + '&appId=' + str(app_id) if h.check_url(redirect_url) is False else redirect_url + '&fuserid=' + str(check["id"]) + '&appId=' + str(app_id)
-            return redirect(url, code=302)
+            #user has been authorized
+            url = redirect_url + '?userid=' + str(check["id"]) + '&appId=' + str(app_id) if h.check_url(redirect_url) is False else redirect_url + '&userid=' + str(check["id"]) + '&appId=' + str(app_id)
+            #the request was made using AJAX, so respond with the URL and a 200
+            if ajax_check is True:
+                output = {"url": url}
+                resp = jsonify(output)
+                resp.status_code = 200
+                return resp
+            #respond directly with a redirect
+            else:
+                return redirect(url, code=302)
         else:
             #user failed authorization, so redirect back with fail param
             url = redirect_url + '?fail=user&appId=' + str(app_id) if h.check_url(redirect_url) is False else redirect_url + '&fail=user&appId=' + str(app_id)
-            return redirect(url, code=302)
+            #the request was made using AJAX, so respond with the URL and a 200
+            if ajax_check is True:
+                output = {"url": url}
+                resp = jsonify(output)
+                resp.status_code = 200
+                return resp
+            #respond directly with a redirect
+            else:
+                return redirect(url, code=302)
     except SanitizerException as e:
         #can't assume the redirect URL was OK so respond with 400, log error
         raise e
@@ -145,10 +161,10 @@ def authorize_user ():
 
 #validates whether a provided password is correct for the provided username
 #no need to check JWT
-#this route always responds with a 302 to either the provided redirect URL (if success) or back to username validation page (if failure)
 @app.route("/authorize/password", methods=['POST'])
 def authorize_password ():
     try:
+        ajax_check = True if request.headers.get("X-Requested-With") == "AJAX" else False
         content = request.get_json(force=True)
         s.Evaluate("authorize_password", content)
 
@@ -158,15 +174,32 @@ def authorize_password ():
         redirect_url = content['redirect_url']
         check = auth.authorize_password(user_id, password)
         if check["valid"] is True:
-            #password is correct, so redirect to provided redirect URL and set cookie containing JWT and pass along usermetadata
+            #password is correct, so redirect to provided redirect URL and set cookie containing JWT
             jwt = auth.provision_jwt(app_id, user_id)
-            response = make_response(redirect(redirect_url))
-            response.set_cookie('jwt', jwt)
-            return response
+            #the request was made using AJAX, so respond with the URL and a 200
+            if ajax_check is True:
+                output = {"url": redirect_url}
+                resp = jsonify(output)
+                resp.status_code = 200
+                resp.set_cookie('jwt', jwt)
+                return resp
+            #respond directly with a redirect
+            else:
+                response = make_response(redirect(redirect_url))
+                response.set_cookie('jwt', jwt)
+                return response
         else:
             #user failed authorization, so redirect back with fail param
             url = redirect_url + '?fail=password&appId=' + str(app_id) if h.check_url(redirect_url) is False else redirect_url + '&fail=password&appId=' + str(app_id)
-            return redirect(url, code=302)
+            #the request was made using AJAX, so respond with the URL and a 200
+            if ajax_check is True:
+                output = {"url": url}
+                resp = jsonify(output)
+                resp.status_code = 200
+                return resp
+            #respond directly with a redirect
+            else:
+                return redirect(url, code=302)
     except SanitizerException as e:
         #can't assume the redirect URL was OK so respond with 400, log error
         raise e
