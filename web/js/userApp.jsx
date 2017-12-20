@@ -1,4 +1,4 @@
-// App.jsx
+// userApp.jsx
 const React = require("react");
 const Header = require("./components/Header.jsx");
 const UserLogin = require("./components/LoginDialog.jsx");

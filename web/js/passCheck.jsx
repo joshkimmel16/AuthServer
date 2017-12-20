@@ -1,11 +1,11 @@
-// index.jsx
+// passCheck.jsx
 
 //JS dependencies
 global.jQuery = require('jquery/dist/jquery.min.js');
 const bootstrap = require('bootstrap/dist/js/bootstrap.min.js');
 const React = require("react");
 const ReactDOM = require("react-dom");
-const App = require("./App");
+const App = require("./passApp");
 
 //styling and resource dependencies
 require('bootstrap/dist/css/bootstrap.min.css');

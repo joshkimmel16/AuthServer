@@ -1,9 +1,12 @@
 const webpack = require('webpack');
 const config = {
-    entry:  __dirname + '/js/index.jsx',
+    entry:  {
+        userLogin: __dirname + '/js/userLogin.jsx',
+        passCheck: __dirname + '/js/passCheck.jsx'
+    },
     output: {
         path: __dirname + '/dist',
-        filename: 'bundle.js',
+        filename: '[name].bundle.js',
     },
     resolve: {
         extensions: ['.js', '.jsx', '.css']
