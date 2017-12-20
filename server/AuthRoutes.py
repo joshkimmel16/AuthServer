@@ -72,8 +72,14 @@ def send_resource(path):
 
 #user login web page
 @app.route("/login/user", methods=['GET'])
-def index ():
-    return render_template("index.html")
+def user_login ():
+    return render_template("userLogin.html")
+
+#password login web page
+@app.route("/login/password", methods=['GET'])
+def password_login ():
+    return render_template("passCheck.html")
+
 
 @app.route("/authorize/session", methods=['POST'])
 def authorize_session ():
