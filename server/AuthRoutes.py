@@ -132,35 +132,43 @@ def authorize_user ():
         check = auth.authorize_username(username)
         if check["valid"] is True:
             #user has been authorized
-            url = redirect_url + '?userid=' + str(check["id"]) + '&appId=' + str(app_id) if h.check_url(redirect_url) is False else redirect_url + '&userid=' + str(check["id"]) + '&appId=' + str(app_id)
-            #the request was made using AJAX, so respond with the URL and a 200
+            #the request was made using AJAX, so respond with appropriate data and a 200
             if ajax_check is True:
-                output = {"url": url}
+                output = {"status": True, "userId": str(check["id"])}
                 resp = jsonify(output)
                 resp.status_code = 200
                 return resp
             #respond directly with a redirect
             else:
+                url = redirect_url + '?userid=' + str(check["id"]) + '&appId=' + str(app_id) if h.check_url(redirect_url) is False else redirect_url + '&userid=' + str(check["id"]) + '&appId=' + str(app_id)
                 return redirect(url, code=302)
         else:
             #user failed authorization, so redirect back with fail param
-            url = redirect_url + '?fail=user&appId=' + str(app_id) if h.check_url(redirect_url) is False else redirect_url + '&fail=user&appId=' + str(app_id)
             #the request was made using AJAX, so respond with the URL and a 200
             if ajax_check is True:
-                output = {"url": url}
+                output = {"status": False, "error": "user"}
                 resp = jsonify(output)
                 resp.status_code = 200
                 return resp
             #respond directly with a redirect
             else:
+                url = redirect_url + '?fail=user&appId=' + str(app_id) if h.check_url(redirect_url) is False else redirect_url + '&fail=user&appId=' + str(app_id)
                 return redirect(url, code=302)
     except SanitizerException as e:
         #can't assume the redirect URL was OK so respond with 400, log error
         raise e
     except AuthorizerException as e:
         #redirect back with fail param, log error
-        url = redirect_url + '?fail=app&appId=' + str(app_id) if h.check_url(redirect_url) is False else redirect_url + '&fail=app&appId=' + str(app_id)
-        return redirect(url, code=302)
+        #the request was made using AJAX, so respond with the URL and a 200
+        if ajax_check is True:
+            output = {"status": False, "error": "app"}
+            resp = jsonify(output)
+            resp.status_code = 200
+            return resp
+        #respond directly with a redirect
+        else:
+            url = redirect_url + '?fail=app&appId=' + str(app_id) if h.check_url(redirect_url) is False else redirect_url + '&fail=app&appId=' + str(app_id)
+            return redirect(url, code=302)
     except Exception as e:
         #can't assume the redirect URL was OK so respond with 500, log error
         raise e
@@ -184,7 +192,7 @@ def authorize_password ():
             jwt = auth.provision_jwt(app_id, user_id)
             #the request was made using AJAX, so respond with the URL and a 200
             if ajax_check is True:
-                output = {"url": redirect_url}
+                output = {"status": True}
                 resp = jsonify(output)
                 resp.status_code = 200
                 resp.set_cookie('jwt', jwt)
@@ -196,23 +204,31 @@ def authorize_password ():
                 return response
         else:
             #user failed authorization, so redirect back with fail param
-            url = redirect_url + '?fail=password&appId=' + str(app_id) if h.check_url(redirect_url) is False else redirect_url + '&fail=password&appId=' + str(app_id)
             #the request was made using AJAX, so respond with the URL and a 200
             if ajax_check is True:
-                output = {"url": url}
+                output = {"status": False, "error": "password"}
                 resp = jsonify(output)
                 resp.status_code = 200
                 return resp
             #respond directly with a redirect
             else:
+                url = redirect_url + '?fail=password&appId=' + str(app_id) if h.check_url(redirect_url) is False else redirect_url + '&fail=password&appId=' + str(app_id)
                 return redirect(url, code=302)
     except SanitizerException as e:
         #can't assume the redirect URL was OK so respond with 400, log error
         raise e
     except AuthorizerException as e:
         #redirect back with fail param, log error
-        url = redirect_url + '?fail=app&appId=' + str(app_id) if h.check_url(redirect_url) is False else redirect_url + '&fail=app&appId=' + str(app_id)
-        return redirect(url, code=302)
+        #the request was made using AJAX, so respond with the URL and a 200
+        if ajax_check is True:
+            output = {"status": False, "error": "app"}
+            resp = jsonify(output)
+            resp.status_code = 200
+            return resp
+        #respond directly with a redirect
+        else:
+            url = redirect_url + '?fail=app&appId=' + str(app_id) if h.check_url(redirect_url) is False else redirect_url + '&fail=app&appId=' + str(app_id)
+            return redirect(url, code=302)
     except Exception as e:
         #can't assume the redirect URL was OK so respond with 500, log error
         raise e
