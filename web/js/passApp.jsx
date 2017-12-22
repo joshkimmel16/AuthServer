@@ -18,7 +18,10 @@ const data = {
       failMessage: "Could not verify password! Please ensure you have entered the correct information.",
       successMessage: "Password verified!",
       modalState: 0,
-      appId: 1
+      appId: 0,
+      redirectUrl: "",
+      targetLocation: "",
+      userId: 0
   }
 };
 
@@ -35,18 +38,32 @@ class App extends React.Component {
       var query = window.location.search.substring(1);
       var vars = query.split('&');
       var check = null;
+      var appId = 0;
+      var redirectUrl = "";
+      var userId = 0;
       for (var i = 0; i < vars.length; i++) {
         var pair = vars[i].split('=');
         if (decodeURIComponent(pair[0]) == "fail") {
             check = decodeURIComponent(pair[1]);
         }
+        else if (decodeURIComponent(pair[0]) == "appId") {
+            appId = parseInt(decodeURIComponent(pair[1]));
+        }
+        else if (decodeURIComponent(pair[0]) == "redirectUrl") {
+            redirectUrl = decodeURIComponent(pair[1]);
+        }
+        else if (decodeURIComponent(pair[0]) == "userId") {
+            userId = parseInt(decodeURIComponent(pair[1]));
+        }
       }
 
-      if (check !== null) {
-          var tempState = this.state.body;
-          tempState.modalState = -1;
-          this.setState({body: tempState});
-      }
+      var tempState = this.state.body;
+      tempState.appId = appId;
+      tempState.redirectUrl = redirectUrl;
+      tempState.targetLocation = redirectUrl;
+      tempState.userId = userId;
+      tempState.modalState = (check !== null) ? -1 : 0;
+      this.setState({body: tempState});
   }
     
   renderHeader () {
@@ -69,6 +86,9 @@ class App extends React.Component {
            successMessage={this.state.body.successMessage}
            modalState={this.state.body.modalState}
            appId={this.state.body.appId}
+           redirectUrl={this.state.body.redirectUrl}
+           targetLocation={this.state.body.targetLocation}
+           userId={this.state.body.userId}
       />
   }
     
