@@ -1,7 +1,7 @@
 // registerApp.jsx
 const React = require("react");
-const Header = require("./components/Header.jsx");
-const AppReg = require("./components/appRegistration.jsx");
+const Header = require("./shared/Header.jsx");
+const AppReg = require("./specific/appRegistration.jsx");
 const data = {
   header: {
       title: "Register Application",
