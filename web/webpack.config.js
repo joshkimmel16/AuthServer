@@ -2,7 +2,8 @@ const webpack = require('webpack');
 const config = {
     entry:  {
         userLogin: __dirname + '/js/userLogin.jsx',
-        passCheck: __dirname + '/js/passCheck.jsx'
+        passCheck: __dirname + '/js/passCheck.jsx',
+        appRegister: __dirname + '/js/appRegister.jsx'
     },
     output: {
         path: __dirname + '/dist',
