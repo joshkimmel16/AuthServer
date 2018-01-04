@@ -8,7 +8,7 @@ class AppRegistration extends React.Component {
         this.state = {
             "nameDescription": options.nameDescription || "",
             "nameLabel": options.nameLabel || "",
-            "nameRegex": options.nameRegex || "",
+            "nameRegex": options.nameRegex || /^$/,
             "nameValue": options.nameValue || "",
             "nameValid": options.nameValid || true,
             "nameErrorHelp": options.nameErrorHelp || "",

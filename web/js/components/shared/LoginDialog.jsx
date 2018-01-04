@@ -8,7 +8,7 @@ class LoginDialog extends React.Component {
         this.state = {
             type: options.type || "",
             inputLabel: options.inputLabel || "",
-            inputRegex: options.inputRegex || "",
+            inputRegex: options.inputRegex || /^$/,
             message: options.message || "",
             submitText: options.submitText || "",
             errorText: options.errorText || "",
