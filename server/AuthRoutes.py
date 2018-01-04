@@ -80,6 +80,10 @@ def user_login ():
 def password_login ():
     return render_template("passCheck.html")
 
+#application registration web page
+@app.route("/reg/app", methods=['GET'])
+def app_register ():
+    return render_template("appRegister.html")
 
 @app.route("/authorize/session", methods=['POST'])
 def authorize_session ():
