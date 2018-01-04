@@ -57,7 +57,7 @@ class AppRegistration extends React.Component {
                     return element.value === context.state.algValue;
                 }))
                 .then(function(result) {
-                   return Q(context.setState({algValid: (result === undefined)}));
+                   return Q(context.setState({algValid: (result !== undefined)}));
                 });
             }
             else {
@@ -107,11 +107,11 @@ class AppRegistration extends React.Component {
                 <div className='dialog'>
                     <span className='desc nameDesc'>{this.state.nameDescription}</span>
                     <label className='nameLabel label' htmlFor='name'>{this.state.nameLabel}</label>
-                    <input type='text' id='name' className='nameInput form-control' disabled={this.state.mode === 1} onInput={function (e) {this.handleInputChange(e.target.value);}.bind(this)} />
+                    <input type='text' id='name' className='nameInput form-control' disabled={this.state.mode === 1} onInput={function (e) {this.handleInputChange("name", e.target.value);}.bind(this)} />
                     <span className={'nameError errorText ' + (this.state.nameValid === true ? 'hide' : '')}>{this.state.nameErrorHelp}</span>
                     <span className='desc algDesc'>{this.state.algDescription}</span>
                     <label className='algLabel label' htmlFor='alg'>{this.state.algLabel}</label>
-                    <select id='alg' className='algInput form-control' disabled={this.state.mode === 1} onChange={function (e) {this.handleInputChange(e.target.value);}.bind(this)}>
+                    <select id='alg' className='algInput form-control' disabled={this.state.mode === 1} onChange={function (e) {this.handleInputChange("alg", e.target.value);}.bind(this)}>
                         <option value=''></option>
                         {this.state.algOptions.map(function (opt, i) {
                                 return <option key={i} value={opt.value}>{opt.text}</option>
