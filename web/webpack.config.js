@@ -3,7 +3,8 @@ const config = {
     entry:  {
         userLogin: __dirname + '/js/userLogin.jsx',
         passCheck: __dirname + '/js/passCheck.jsx',
-        appRegister: __dirname + '/js/appRegister.jsx'
+        appRegister: __dirname + '/js/appRegister.jsx',
+        userRegister: __dirname + '/js/userRegister.jsx'
     },
     output: {
         path: __dirname + '/dist',
