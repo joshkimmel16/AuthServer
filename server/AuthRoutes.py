@@ -85,6 +85,11 @@ def password_login ():
 def app_register ():
     return render_template("appRegister.html")
 
+#user registration web page
+@app.route("/reg/user", methods=['GET'])
+def user_register ():
+    return render_template("userRegister.html")
+
 @app.route("/authorize/session", methods=['POST'])
 def authorize_session ():
     #check for JWT cookie
