@@ -15,10 +15,13 @@ const data = {
         errorText: "Invalid username. A valid username must contain only alphanumeric characters and '.'."
       },
       password: {
-        description: "Please enter a password for the user being registered:",
-        label: "Password:",
+        description1: "Please enter a password for the user being registered:",
+        description2: "Please confirm the user's password:",
+        label1: "Password:",
+        label2: "Password:",
         regex: /^[A-Za-z0-9!@#\$%\^\&\*\(\)]+$/,
-        errorText: "Invalid password. A valid password must contain only alphanumeric characters and '!@#$%^&*()'. Also, you must ensure that the two passwords match."
+        errorText1: "Invalid password. A valid password must contain only alphanumeric characters and '!@#$%^&*()'.",
+        errorText2: "The passwords do not match!"
       },
       firstName: {
         description: "Please enter the user's first name:",

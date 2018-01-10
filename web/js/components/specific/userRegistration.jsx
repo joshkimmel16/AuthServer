@@ -15,13 +15,17 @@ class UserRegistration extends React.Component {
               "errorText": options.username.errorText || ""
             },
             "password": {
-              "description": options.password.description || "",
-              "label": options.password.label || "",
+              "description1": options.password.description1 || "",
+              "description2": options.password.description2 || "",
+              "label1": options.password.label1 || "",
+              "label2": options.password.label2 || "",
               "regex": options.password.regex || /^$/,
               "value1": options.password.value1 || "",
               "value2": options.password.value2 || "",
-              "valid": options.password.valid || true,
-              "errorText": options.password.errorText || ""
+              "valid1": options.password.valid1 || true,
+              "valid2": options.password.valid2 || true,
+              "errorText1": options.password.errorText1 || "",
+              "errorText2": options.password.errorText2 || ""
             },
             "metadata": {
                 "firstName": {
@@ -126,7 +130,7 @@ class UserRegistration extends React.Component {
             return Q(context.state.password.regex.test(context.state.password.value1))
                 .then(function(result) {
                     tempObj.password = context.state.password;
-                    tempObj.password.valid = result;
+                    tempObj.password.valid1 = result;
                     return Q(context.setState(tempObj));
                 });
         }
@@ -134,7 +138,7 @@ class UserRegistration extends React.Component {
             return Q(function () {return context.state.password.value1 === context.state.password.value2;}())
                 .then(function(result) {
                     tempObj.password = context.state.password;
-                    tempObj.password.valid = result;
+                    tempObj.password.valid2 = result;
                     return Q(context.setState(tempObj));
                 });
         }
@@ -192,9 +196,9 @@ class UserRegistration extends React.Component {
             .then(context.checkValidity("email"))
             .then(context.checkValidity("rights"))
             .then(function () {
-                if (context.state.username.valid === true && context.state.password.valid === true && context.state.metadata.firstName.valid === true && context.state.metadata.lastName.valid === true && context.state.metadata.email.valid === true && context.state.metadata.rights.valid === true && context.state.mode === 0) {
+                if (context.state.username.valid === true && context.state.password.valid1 === true && context.state.password.valid2 === true && context.state.metadata.firstName.valid === true && context.state.metadata.lastName.valid === true && context.state.metadata.email.valid === true && context.state.metadata.rights.valid === true && context.state.mode === 0) {
                     context.setState({mode: 1});
-                    var payload = {name: context.state.username.value, password: context.state.password.value, metadata: {firstName: context.state.metadata.firstName.value, lastName: context.state.metadata.lastName.value, email: context.state.metadata.email.value, rights: parseInt(context.state.metadata.rights.value)}};
+                    var payload = {name: context.state.username.value, password: context.state.password.value1, metadata: {firstName: context.state.metadata.firstName.value, lastName: context.state.metadata.lastName.value, email: context.state.metadata.email.value, rights: parseInt(context.state.metadata.rights.value)}};
                     axios.post(context.state.action, payload, {headers: {"X-Requested-With": "AJAX"}})
                         .then(function(response) { context.handleResponse(response); })
                         .catch(function(error) { context.handleResponse(error.response); });
@@ -229,12 +233,14 @@ class UserRegistration extends React.Component {
                         <label className='uNameLabel label' htmlFor='uName'>{this.state.username.label}</label>
                         <input type='text' id='uName' className='uNameInput form-control' disabled={this.state.mode === 1} onInput={function (e) {this.handleInputChange("user", e.target.value);}.bind(this)} />
                         <span className={'uNameError errorText ' + (this.state.username.valid === true ? 'hide' : '')}>{this.state.username.errorText}</span>
-                        <span className='desc p1Desc'>{this.state.password.description}</span>
-                        <label className='p1Label label' htmlFor='p1'>{this.state.password.label}</label>
+                        <span className='desc p1Desc'>{this.state.password.description1}</span>
+                        <label className='p1Label label' htmlFor='p1'>{this.state.password.label1}</label>
                         <input type='password' id='p1' className='p1Input form-control' disabled={this.state.mode === 1} onInput={function (e) {this.handleInputChange("pass1", e.target.value);}.bind(this)} />
-                        <label className='p2Label label' htmlFor='p2'>{this.state.password.label}</label>
+                        <span className={'p1Error errorText ' + (this.state.password.valid1 === true ? 'hide' : '')}>{this.state.password.errorText1}</span>
+                        <span className='desc p2Desc'>{this.state.password.description2}</span>
+                        <label className='p2Label label' htmlFor='p2'>{this.state.password.label2}</label>
                         <input type='password' id='p2' className='p2Input form-control' disabled={this.state.mode === 1} onInput={function (e) {this.handleInputChange("pass2", e.target.value);}.bind(this)} />
-                        <span className={'pError errorText ' + (this.state.password.valid === true ? 'hide' : '')}>{this.state.password.errorText}</span>
+                        <span className={'p2Error errorText ' + (this.state.password.valid2 === true ? 'hide' : '')}>{this.state.password.errorText2}</span>
                     </div>
                     <div className='metaInfo'>
                         <h2 className='ttl metaTitle'>{this.state.metaTitle}</h2>
@@ -261,7 +267,7 @@ class UserRegistration extends React.Component {
                         </select>
                         <span className={'rError errorText ' + (this.state.metadata.rights.valid === true ? 'hide' : '')}>{this.state.metadata.rights.errorText}</span>
                     </div>
-                    <button className='submit btn btn-default' disabled={this.state.nameValid === false || this.state.algValid === false || this.state.mode === 1} onClick={function(e) {this.registerApp();}.bind(this)}>{this.state.submitText}</button>
+                    <button className='submit btn btn-default' disabled={this.state.nameValid === false || this.state.algValid === false || this.state.mode === 1} onClick={function(e) {this.registerUser();}.bind(this)}>{this.state.submitText}</button>
                 </div>
             </div>
         )

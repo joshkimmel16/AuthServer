@@ -227,10 +227,16 @@
     left: 6%;
 }
 
-.pError {
+.p1Error {
     position: absolute;
     top: 67%;
     left: 6%;
+}
+
+.p2Error {
+    position: absolute;
+    top: 67%;
+    left: 56%;
 }
 
 .fNameError {
@@ -265,9 +271,9 @@
 
 .success {
     position: absolute;
-    top: 10%;
-    left: 15%;
-    width: 70%;
+    top: 6%;
+    left: 40%;
+    width: 20%;
     text-align: center;
 }
 
