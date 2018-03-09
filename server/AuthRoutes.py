@@ -29,6 +29,8 @@ StaticsException = Statics.StaticsException
 #implement application id to secret cache
     #will require some modifications in AuthJwt
 #implement access rights model for users
+    #resrict access to pages based on user rights
+    #require token and sufficient rights when making certain API calls
 
 #define error handlers
 @app.errorhandler(SanitizerException)
@@ -72,6 +74,11 @@ def method_not_allowed(err):
 def send_resource(path):
     return path
 
+#access denied web page
+@app.route("/denied", methods=['GET'])
+def denied ():
+    return render_template("accessDenied.html")
+
 #user login web page
 @app.route("/login/user", methods=['GET'])
 def user_login ():
@@ -93,8 +100,7 @@ def app_register ():
         r = auth.check_token_validity(request.cookies["jwt"], appId, config["rights"]["appRegister"])
         if r["result"] == False:
             if r["fail"] == "Insufficient Rights":
-                #TODO: redirect to some static error page stating that the given user does not have rights to view this page
-                return redirect("https://google.com", code=302)
+                return redirect(baseUrl + "denied", code=302)
             else:
                 url = baseUrl + "login/user?" + urlencode({'appId': appId, 'redirectUrl': request.url})
                 return redirect(url, code=302)
@@ -115,8 +121,7 @@ def user_register ():
         r = auth.check_token_validity(request.cookies["jwt"], appId, config["rights"]["userRegister"])
         if r["result"] == False:
             if r["fail"] == "Insufficient Rights":
-                #TODO: redirect to some static error page stating that the given user does not have rights to view this page
-                return redirect("https://google.com", code=302)
+                return redirect(baseUrl + "denied", code=302)
             else:
                 url = baseUrl + "login/user?" + urlencode({'appId': appId, 'redirectUrl': request.url})
                 return redirect(url, code=302)
