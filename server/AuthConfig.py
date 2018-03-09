@@ -29,6 +29,11 @@ class Config:
                 
             },
             "server": {
-                "port": 4000
+                "port": 4000,
+                "appId": 1
+            },
+            "rights": {
+                "userRegister": 1,
+                "appRegister": 1
             }
         }

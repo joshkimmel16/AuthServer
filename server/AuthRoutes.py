@@ -1,5 +1,7 @@
 from sys import path
 import os
+import urllib3
+from urllib.parse import urlencode
 import AuthConfig
 path.append(os.getcwd() + "\\bin")
 import AuthJwt
@@ -83,13 +85,64 @@ def password_login ():
 #application registration web page
 @app.route("/reg/app", methods=['GET'])
 def app_register ():
-    return render_template("appRegister.html")
+    appId = config["server"]["appId"]
+    baseUrl = request.host_url
+    
+    #check if auth token is present
+    if "jwt" in request.cookies:
+        jwt = request.cookies["jwt"]
+        token = auth.decrypt_token(jwt, appId)
+        check = auth.check_token_expiration(token['payload'])
+        
+        #check if auth token has expired
+        if check is False:
+            url = baseUrl + "login/user?" + urlencode({'appId': appId, 'redirectUrl': request.url})
+            return redirect(url, code=302)
+        else:
+            rights = token["payload"]["usermetadata"]["rights"]
+            
+            #ensure user has sufficient rights to view this page
+            #TODO: add a rights mask to config to govern access to resources
+            if (rights & config["rights"]["appRegister"] > 0):
+                return render_template("appRegister.html")
+            else:
+                #TODO: redirect to some static error page stating that the given user does not have rights to view this page
+                return redirect("https://google.com", code=302)
+    else:
+        url = baseUrl + "login/user?" + urlencode({'appId': appId, 'redirectUrl': request.url})
+        return redirect(url, code=302)
 
 #user registration web page
 @app.route("/reg/user", methods=['GET'])
 def user_register ():
-    return render_template("userRegister.html")
+    appId = config["server"]["appId"]
+    baseUrl = request.host_url
+    
+    #check if auth token is present
+    if "jwt" in request.cookies:
+        jwt = request.cookies["jwt"]
+        token = auth.decrypt_token(jwt, appId)
+        check = auth.check_token_expiration(token['payload'])
+        
+        #check if auth token has expired
+        if check is False:
+            url = baseUrl + "login/user?" + urlencode({'appId': appId, 'redirectUrl': request.url})
+            return redirect(url, code=302)
+        else:
+            rights = token["payload"]["usermetadata"]["rights"]
+            
+            #ensure user has sufficient rights to view this page
+            #TODO: add a rights mask to config to govern access to resources
+            if (rights & config["rights"]["userRegister"] > 0):
+                return render_template("userRegister.html")
+            else:
+                #TODO: redirect to some static error page stating that the given user does not have rights to view this page
+                return redirect("https://google.com", code=302)
+    else:
+        url = baseUrl + "login/user?" + urlencode({'appId': appId, 'redirectUrl': request.url})
+        return redirect(url, code=302)
 
+#authorize session route
 @app.route("/authorize/session", methods=['POST'])
 def authorize_session ():
     #check for JWT cookie
