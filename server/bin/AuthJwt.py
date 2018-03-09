@@ -64,7 +64,6 @@ class Authorizer:
     #also capture statics for JWT generation
     def __init__ (self, config):
         self.authConfig = config["data"]["auth"]
-        self.staticsConfig = config["data"]["statics"]
         self.data_layer = PostGres()
         self.default_alg = config["defaults"]["default_alg"]
         self.password_secret = config["defaults"]["password_secret"]
@@ -141,6 +140,32 @@ class Authorizer:
         except Exception as e:
             raise AuthorizerException("Error encountered while validating token expiration!", "check_token_expiration", e)
             
+    #wrapper method that decrypts token, checks expiration, and checks rights against rights mask
+    def check_token_validity (self, jwt, appId, rights_mask):
+        try:
+            token = None
+            try:
+                token = self.decrypt_token(jwt, appId)
+            except AuthorizerException as e:
+                return {"result": False, "fail": "Invalid Signature", "token": None}
+
+            check = self.check_token_expiration(token['payload'])
+
+            #check if auth token has expired
+            if check is False:
+                return {"result": False, "fail": "Token Expired", "token": token}
+            else:
+                if rights_mask != -1:
+                    rights = token["payload"]["usermetadata"]["rights"]
+                    if (rights & rights_mask > 0):
+                        return {"result": True, "fail": None, "token": token}
+                    else:
+                        return {"result": False, "fail": "Insufficient Rights", "token": token}
+                else:
+                    return {"result": True, "fail": None, "token": token}
+        except Exception as e:
+            raise AuthorizerException("Error encountered while checking token validity!", "check_token_validity", e)
+                
     
     #generate a jwt to be passed to the requester
     def provision_jwt (self, app_id, user_id):
@@ -185,7 +210,7 @@ class Authorizer:
         except Exception as e:
             raise AuthorizerException("Could not verify the provided application name!", "register_application", e)
         try:
-            secret = base64.b64encode(h.generate_secret(alg)).decode()
+            secret = base64.b64encode(h.generate_secret(alg)).decode('utf-8')
             self.data_layer.Connect(self.authConfig["server"], self.authConfig["db"], self.authConfig["user"], self.authConfig["password"])
             res = self.data_layer.ExecuteFunction('create_application', ['string', 'string', 'string'], [app_name, secret, alg])
             self.data_layer.Disconnect()

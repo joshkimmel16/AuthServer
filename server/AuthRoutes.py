@@ -90,24 +90,16 @@ def app_register ():
     
     #check if auth token is present
     if "jwt" in request.cookies:
-        jwt = request.cookies["jwt"]
-        token = auth.decrypt_token(jwt, appId)
-        check = auth.check_token_expiration(token['payload'])
-        
-        #check if auth token has expired
-        if check is False:
-            url = baseUrl + "login/user?" + urlencode({'appId': appId, 'redirectUrl': request.url})
-            return redirect(url, code=302)
-        else:
-            rights = token["payload"]["usermetadata"]["rights"]
-            
-            #ensure user has sufficient rights to view this page
-            #TODO: add a rights mask to config to govern access to resources
-            if (rights & config["rights"]["appRegister"] > 0):
-                return render_template("appRegister.html")
-            else:
+        r = auth.check_token_validity(request.cookies["jwt"], appId, config["rights"]["appRegister"])
+        if r["result"] == False:
+            if r["fail"] == "Insufficient Rights":
                 #TODO: redirect to some static error page stating that the given user does not have rights to view this page
                 return redirect("https://google.com", code=302)
+            else:
+                url = baseUrl + "login/user?" + urlencode({'appId': appId, 'redirectUrl': request.url})
+                return redirect(url, code=302)
+        else:
+            return render_template("appRegister.html")
     else:
         url = baseUrl + "login/user?" + urlencode({'appId': appId, 'redirectUrl': request.url})
         return redirect(url, code=302)
@@ -120,24 +112,16 @@ def user_register ():
     
     #check if auth token is present
     if "jwt" in request.cookies:
-        jwt = request.cookies["jwt"]
-        token = auth.decrypt_token(jwt, appId)
-        check = auth.check_token_expiration(token['payload'])
-        
-        #check if auth token has expired
-        if check is False:
-            url = baseUrl + "login/user?" + urlencode({'appId': appId, 'redirectUrl': request.url})
-            return redirect(url, code=302)
-        else:
-            rights = token["payload"]["usermetadata"]["rights"]
-            
-            #ensure user has sufficient rights to view this page
-            #TODO: add a rights mask to config to govern access to resources
-            if (rights & config["rights"]["userRegister"] > 0):
-                return render_template("userRegister.html")
-            else:
+        r = auth.check_token_validity(request.cookies["jwt"], appId, config["rights"]["userRegister"])
+        if r["result"] == False:
+            if r["fail"] == "Insufficient Rights":
                 #TODO: redirect to some static error page stating that the given user does not have rights to view this page
                 return redirect("https://google.com", code=302)
+            else:
+                url = baseUrl + "login/user?" + urlencode({'appId': appId, 'redirectUrl': request.url})
+                return redirect(url, code=302)
+        else:
+            return render_template("appRegister.html")
     else:
         url = baseUrl + "login/user?" + urlencode({'appId': appId, 'redirectUrl': request.url})
         return redirect(url, code=302)
