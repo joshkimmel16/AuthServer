@@ -130,6 +130,38 @@ def user_register ():
     else:
         url = baseUrl + "login/user?" + urlencode({'appId': appId, 'redirectUrl': request.url})
         return redirect(url, code=302)
+    
+#user update web page
+@app.route("/up/user", methods=['GET'])
+def user_update ():
+    appId = config["server"]["appId"]
+    baseUrl = request.host_url
+    
+    #check if auth token is present
+    if "jwt" in request.cookies:
+        r = auth.check_token_validity(request.cookies["jwt"], appId, -1)
+        if r["result"] == False:
+            url = baseUrl + "login/user?" + urlencode({'appId': appId, 'redirectUrl': request.url})
+            return redirect(url, code=302)
+        else:
+            #if URL userId does not match payload's userId, check rights. If admin proceed, otherwise deny
+            uId = request.args.get('userId')
+            payload = r["token"]["payload"]
+            if uId != None:
+                if uId != payload["userid"]:
+                    if payload["usermetadata"]["rights"] != 1:
+                        return redirect(baseUrl + "denied", code=302)
+                    else:
+                        return render_template("userUpdate.html")
+                else:
+                    return render_template("userUpdate.html")
+            else:
+                url = (request.url + "?userId=" + str(payload["userid"]))
+                print (url)
+                return redirect(url, code=302)
+    else:
+        url = baseUrl + "login/user?" + urlencode({'appId': appId, 'redirectUrl': request.url})
+        return redirect(url, code=302)
 
 #authorize session route
 @app.route("/authorize/session", methods=['POST'])
