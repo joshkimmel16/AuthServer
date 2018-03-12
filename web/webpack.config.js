@@ -5,7 +5,8 @@ const config = {
         passCheck: __dirname + '/js/passCheck.jsx',
         appRegister: __dirname + '/js/appRegister.jsx',
         userRegister: __dirname + '/js/userRegister.jsx',
-        accessDenied: __dirname + '/js/accessDenied.jsx'
+        accessDenied: __dirname + '/js/accessDenied.jsx',
+        userUpdate: __dirname + '/js/userUpdate.jsx'
     },
     output: {
         path: __dirname + '/dist',
