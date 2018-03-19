@@ -149,7 +149,8 @@ class Sanitizer:
     def retrieve_user (self, body):
         try:
             if "id" in body:
-                if not isinstance(body["id"], int) or body["id"] < 1:
+                uId = int(body["id"])
+                if uId < 1:
                     raise SanitizerException("Invalid value provided for parameter 'id'!", "retrieve_user", None)
             else:
                 raise SanitizerException("Missing required paramater 'id'!", "retrieve_user", None)

@@ -370,13 +370,13 @@ def register_user ():
         #respond with 500, generic error message
         raise e
         
-@app.route("/retrieve/user", methods=['GET'])
-def retrieve_user ():
+@app.route("/retrieve/user/<userId>", methods=['GET'])
+def retrieve_user (userId):
     try:
-        content = request.get_json(force=True)
+        content = {"id": userId}
         s.Evaluate("retrieve_user", content)
         
-        output = auth.retrieve_user(content["id"])
+        output = auth.retrieve_user(int(userId))
         
         #respond with 200 and output in body
         resp = jsonify(output)
