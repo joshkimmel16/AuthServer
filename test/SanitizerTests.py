@@ -157,17 +157,17 @@ except Exception as e:
     raise e
 
 #/retrieve/user
-s.Evaluate("retrieve_user", {"metadata": {"key": "value"}}) #valid
+s.Evaluate("retrieve_user", {"id": 1234}) #valid
 try:
-    s.Evaluate("retrieve_user", {}) #invalid - missing metadata
-    raise Exception("retrieve_user missing metadata test failed!")
+    s.Evaluate("retrieve_user", {}) #invalid - missing id
+    raise Exception("retrieve_user missing id test failed!")
 except SanitizerException as e:
     pass
 except Exception as e:
     raise e
 try:
-    s.Evaluate("retrieve_user", {"metadata": 32432}) #invalid - bad metadata type
-    raise Exception("retrieve_user invalid metadata type test failed!")
+    s.Evaluate("retrieve_user", {"id": "blah"}) #invalid - bad id type
+    raise Exception("retrieve_user invalid id type test failed!")
 except SanitizerException as e:
     pass
 except Exception as e:

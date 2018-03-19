@@ -264,6 +264,21 @@ class Authorizer:
         except Exception as e:
             raise AuthorizerException("Could not register the user!", "register_user", e)
     
+    #method to get a given user's information
+    def retrieve_user (self, user_id):
+        try:
+            self.data_layer.Connect(self.authConfig["server"], self.authConfig["db"], self.authConfig["user"], self.authConfig["password"])
+            user = self.data_layer.CustomQuery('SELECT * FROM users WHERE id=' + str(user_id) + " LIMIT 1;", "get")
+            self.data_layer.Disconnect()
+            
+            if len(user) != 0:
+                user = user[0]
+                return {"id": user[0], "username": user[1], "metadata": user[4]}
+            else:
+                raise AuthorizerException("The given user doesn't exist!", "retrieve_user", e)
+        except Exception as e:
+            raise AuthorizerException("Error encountered while trying to retrieve user information for user with ID " + str(userid) + "!", "retrieve_user", e)
+    
     #method to retrieve the given user's username using metadata
     def retrieve_username (self, metadata):
         def transform_json (json):

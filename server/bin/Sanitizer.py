@@ -148,13 +148,11 @@ class Sanitizer:
     #validate inputs to /retrieve/user
     def retrieve_user (self, body):
         try:
-            if "metadata" in body:
-                if not isinstance(body["metadata"], dict):
-                    raise SanitizerException("Invalid value provided for parameter 'metadata'!", "retrieve_user", None)
-                else:
-                    self.validate_user_metadata(body["metadata"])
+            if "id" in body:
+                if not isinstance(body["id"], int) or body["id"] < 1:
+                    raise SanitizerException("Invalid value provided for parameter 'id'!", "retrieve_user", None)
             else:
-                raise SanitizerException("Missing required paramater 'metadata'!", "retrieve_user", None)
+                raise SanitizerException("Missing required paramater 'id'!", "retrieve_user", None)
         except Exception as e:
             raise SanitizerException("Body failed validation!", "retrieve_user", e)
             

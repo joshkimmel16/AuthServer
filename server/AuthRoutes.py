@@ -157,7 +157,6 @@ def user_update ():
                     return render_template("userUpdate.html")
             else:
                 url = (request.url + "?userId=" + str(payload["userid"]))
-                print (url)
                 return redirect(url, code=302)
     else:
         url = baseUrl + "login/user?" + urlencode({'appId': appId, 'redirectUrl': request.url})
@@ -377,7 +376,7 @@ def retrieve_user ():
         content = request.get_json(force=True)
         s.Evaluate("retrieve_user", content)
         
-        output = auth.retrieve_username(content)
+        output = auth.retrieve_user(content["id"])
         
         #respond with 200 and output in body
         resp = jsonify(output)
