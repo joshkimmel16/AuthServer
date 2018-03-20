@@ -25,6 +25,14 @@
     left: 3%;
 }
 
+.loginLink {
+    position: absolute;
+    left: 92%;
+    top: 25%;
+    font-family: "Times", Georgia, Serif;
+    font-size: 24px;
+}
+
 .background {
     position: absolute;
     top: 10%;

@@ -5,7 +5,12 @@ const AppReg = require("./specific/appRegistration.jsx");
 const data = {
   header: {
       title: "Register Application",
-      logo: "/dist/248f90e02f291ea0913c525495353369.jpg"   
+      logo: "/dist/248f90e02f291ea0913c525495353369.jpg",
+      showLogin: true,
+      loginText: "Log In",
+      logoutText: "Log Out",
+      loginState: true,
+      loginRedirect: "/login/user?appId=1"
   },
   body: {
       nameDescription: "Please enter a name for the application being registered:",
@@ -36,6 +41,11 @@ class App extends React.Component {
         return <Header
             logo={this.state.header.logo}
             title={this.state.header.title}
+            showLogin={this.state.header.showLogin}
+            loginText={this.state.header.loginText}
+            logoutText={this.state.header.logoutText}
+            loginState={this.state.header.loginState}
+            loginRedirect={this.state.header.loginRedirect}
         />
   }
     

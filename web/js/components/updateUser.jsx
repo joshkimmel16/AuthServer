@@ -6,7 +6,12 @@ const UserReg = require("./specific/userUpdate.jsx");
 const data = {
   header: {
       title: "Update User Information",
-      logo: "/dist/248f90e02f291ea0913c525495353369.jpg"   
+      logo: "/dist/248f90e02f291ea0913c525495353369.jpg",
+      showLogin: true,
+      loginText: "Log In",
+      logoutText: "Log Out",
+      loginState: true,
+      loginRedirect: "/login/user?appId=1"
   },
   body: {
       userId: 0, //HOW TO GET THIS FROM THE TEMPLATE BEING RENDERED
@@ -108,6 +113,11 @@ class App extends React.Component {
         return <Header
             logo={this.state.header.logo}
             title={this.state.header.title}
+            showLogin={this.state.header.showLogin}
+            loginText={this.state.header.loginText}
+            logoutText={this.state.header.logoutText}
+            loginState={this.state.header.loginState}
+            loginRedirect={this.state.header.loginRedirect}
         />
   }
     

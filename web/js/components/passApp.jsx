@@ -5,7 +5,12 @@ const PassCheck = require("./shared/LoginDialog.jsx");
 const data = {
   header: {
       title: "Verify Password",
-      logo: "/dist/248f90e02f291ea0913c525495353369.jpg"   
+      logo: "/dist/248f90e02f291ea0913c525495353369.jpg",
+      showLogin: false,
+      loginText: "Log In",
+      logoutText: "Log Out",
+      loginState: false,
+      loginRedirect: "/login/user?appId=1"
   },
   body: {
       type: "password",
@@ -70,6 +75,11 @@ class App extends React.Component {
         return <Header
             logo={this.state.header.logo}
             title={this.state.header.title}
+            showLogin={this.state.header.showLogin}
+            loginText={this.state.header.loginText}
+            logoutText={this.state.header.logoutText}
+            loginState={this.state.header.loginState}
+            loginRedirect={this.state.header.loginRedirect}
         />
   }
     
