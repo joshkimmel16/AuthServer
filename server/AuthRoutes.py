@@ -161,6 +161,31 @@ def user_update ():
     else:
         url = baseUrl + "login/user?" + urlencode({'appId': appId, 'redirectUrl': request.url})
         return redirect(url, code=302)
+    
+#landing page for logins
+@app.route("/landing", methods=['GET'])
+def landing ():
+    appId = config["server"]["appId"]
+    baseUrl = request.host_url
+    
+    #check if auth token is present
+    if "jwt" in request.cookies:
+        r = auth.check_token_validity(request.cookies["jwt"], appId, -1)
+        if r["result"] == False:
+            url = baseUrl + "login/user?" + urlencode({'appId': appId, 'redirectUrl': request.url})
+            return redirect(url, code=302)
+        else:
+            #if URL userId does not match payload's userId, check rights. If admin proceed, otherwise deny
+            uId = request.args.get('userId')
+            payload = r["token"]["payload"]
+            if uId != None:
+                return render_template("landingPage.html")
+            else:
+                url = (request.url + "?userId=" + str(payload["userid"]))
+                return redirect(url, code=302)
+    else:
+        url = baseUrl + "login/user?" + urlencode({'appId': appId, 'redirectUrl': request.url})
+        return redirect(url, code=302)
 
 #authorize session route
 @app.route("/authorize/session", methods=['POST'])
