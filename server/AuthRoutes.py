@@ -148,7 +148,7 @@ def user_update ():
             uId = request.args.get('userId')
             payload = r["token"]["payload"]
             if uId != None:
-                if uId != payload["userid"]:
+                if uId != str(payload["userid"]):
                     if payload["usermetadata"]["rights"] != 1:
                         return redirect(baseUrl + "denied", code=302)
                     else:
