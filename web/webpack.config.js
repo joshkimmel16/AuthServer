@@ -6,7 +6,8 @@ const config = {
         appRegister: __dirname + '/js/appRegister.jsx',
         userRegister: __dirname + '/js/userRegister.jsx',
         accessDenied: __dirname + '/js/accessDenied.jsx',
-        userUpdate: __dirname + '/js/userUpdate.jsx'
+        userUpdate: __dirname + '/js/userUpdate.jsx',
+        landingPage: __dirname + '/js/landingPage.jsx'
     },
     output: {
         path: __dirname + '/dist',
