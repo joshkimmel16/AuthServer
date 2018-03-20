@@ -14,31 +14,41 @@ const data = {
         description: "If you would like to change the username, please do so here:",
         label: "Username:",
         regex: /^[A-Za-z0-9\.]+$/,
-        errorText: "Invalid username. A valid username must contain only alphanumeric characters and '.'."
+        errorText: "Invalid username. A valid username must contain only alphanumeric characters and '.'.",
+        value: "",
+        valid: true
       },
       firstName: {
         description: "Please enter the user's first name:",
         label: "First Name:",
         regex: /^[A-Za-z\-']+$/,
-        errorText: "Invalid entry. A valid entry must contain only letters, hyphens, and apostrophes."
+        errorText: "Invalid entry. A valid entry must contain only letters, hyphens, and apostrophes.",
+        value: "",
+        valid: true
       },
       lastName: {
         description: "Please enter the user's last name:",
         label: "Last Name:",
         regex: /^[A-Za-z\-']+$/,
-        errorText: "Invalid entry. A valid entry must contain only letters, hyphens, and apostrophes."
+        errorText: "Invalid entry. A valid entry must contain only letters, hyphens, and apostrophes.",
+        value: "",
+        valid: true
       },
       email: {
         description: "Please enter the user's email address:",
         label: "Email:",
         regex: /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/,
-        errorText: "Invalid email. If you don't know what constitutes a valid email address, do some research."
+        errorText: "Invalid email. If you don't know what constitutes a valid email address, do some research.",
+        value: "",
+        valid: true
       },
       rights: {
         description: "Please select the security type for the user being registered:",
         label: "Security Type:",
         options: [{value: 0, text: "Basic User"}, {value: 1, text: "Administrator"}],
-        errorText: "Invalid security type. Please select an option from the list initially provided on the page."
+        errorText: "Invalid security type. Please select an option from the list initially provided on the page.",
+        value: "",
+        valid: true
       },
       loginTitle: "User Login Information",
       metaTitle: "Additional User Information",
@@ -51,39 +61,12 @@ const data = {
 };
 
 class App extends React.Component {
-  constructor(inputDate) {
+  constructor() {
         super();
         this.state = {
             header: data.header,
             body: data.body
         };
-      
-        //parse URL param for userId
-        var uId
-      
-        //use userId param to make an AJAX call to the server to retrieve all existing user information
-        var context = this;
-        axios.get('/retrieve/user', {id: context.state.body.userId}, {headers: {"X-Requested-With": "AJAX"}})
-            .then(function(response) {
-                var b = context.state.body;
-                var u = b.username;
-                var m = b.metadata;
-                u.value = response.body.name;
-                m.firstName.value = response.body.metadata.firstName;
-                m.lastName.value = response.body.metadata.lastName;
-                m.email.value = response.body.metadata.email;
-                m.rights.value = response.body.metadata.rights;
-                b.username = u;
-                b.metadata = m;
-                context.setState({body: b});
-            })
-            .catch(function(error) {
-                var b = context.state.body;
-                b.failMessage = "Could not retrieve the given user's information!";
-                b.modalState = -1;
-                b.mode = 1;
-                context.setState({body: b});
-            });
   }
     
   componentDidMount () {
@@ -102,17 +85,15 @@ class App extends React.Component {
       
     //use userId param to make an AJAX call to the server to retrieve all existing user information
     var context = this;
-    axios.get('/retrieve/user', {id: context.state.body.userId}, {headers: {"X-Requested-With": "AJAX"}})
+    axios.get('/retrieve/user/' + uId, {headers: {"X-Requested-With": "AJAX"}})
         .then(function(response) {
-            var u = tempState.username;
-            var m = tempState.metadata;
-            u.value = response.body.name;
-            m.firstName.value = response.body.metadata.firstName;
-            m.lastName.value = response.body.metadata.lastName;
-            m.email.value = response.body.metadata.email;
-            m.rights.value = response.body.metadata.rights;
-            tempState.username = u;
-            tempState.metadata = m;
+            tempState.username.value = response.data.username;
+            var met = JSON.parse(response.data.metadata);
+            tempState.firstName.value = met.firstName;
+            tempState.lastName.value = met.lastName;
+            tempState.email.value = met.email;
+            tempState.rights.value = met.rights;
+            
             context.setState({body: tempState});
         })
         .catch(function(error) {
