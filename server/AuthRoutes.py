@@ -126,7 +126,7 @@ def user_register ():
                 url = baseUrl + "login/user?" + urlencode({'appId': appId, 'redirectUrl': request.url})
                 return redirect(url, code=302)
         else:
-            return render_template("appRegister.html")
+            return render_template("userRegister.html")
     else:
         url = baseUrl + "login/user?" + urlencode({'appId': appId, 'redirectUrl': request.url})
         return redirect(url, code=302)
