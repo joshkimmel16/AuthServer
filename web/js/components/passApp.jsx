@@ -24,7 +24,7 @@ const data = {
       successMessage: "Password verified!",
       modalState: 0,
       appId: 0,
-      redirectUrl: "",
+      redirectUrl: (window.location.origin + "/landing"),
       targetLocation: "",
       userId: 0
   }
@@ -44,7 +44,7 @@ class App extends React.Component {
       var vars = query.split('&');
       var check = null;
       var appId = 0;
-      var redirectUrl = "";
+      var redirectUrl = (window.location.origin + "/landing");
       var userId = 0;
       for (var i = 0; i < vars.length; i++) {
         var pair = vars[i].split('=');
@@ -56,6 +56,9 @@ class App extends React.Component {
         }
         else if (decodeURIComponent(pair[0]) == "redirectUrl") {
             redirectUrl = decodeURIComponent(pair[1]);
+            if (redirectUrl == "") {
+                redirectUrl = (window.location.origin + "/landing");
+            }
         }
         else if (decodeURIComponent(pair[0]) == "userId") {
             userId = parseInt(decodeURIComponent(pair[1]));
