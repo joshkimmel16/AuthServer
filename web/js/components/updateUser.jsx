@@ -11,7 +11,7 @@ const data = {
       loginText: "Log In",
       logoutText: "Log Out",
       loginState: true,
-      loginRedirect: "/login/user?appId=1"
+      loginRedirect: "/login/user?appId=1&redirectUrl=" + encodeURIComponent(window.location.origin + "/landing")
   },
   body: {
       userId: 0, //HOW TO GET THIS FROM THE TEMPLATE BEING RENDERED

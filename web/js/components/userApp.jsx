@@ -10,7 +10,7 @@ const data = {
       loginText: "Log In",
       logoutText: "Log Out",
       loginState: false,
-      loginRedirect: "/login/user?appId=1"
+      loginRedirect: "/login/user?appId=1&redirectUrl=" + encodeURIComponent(window.location.origin + "/landing")
   },
   body: {
       type: "text",
