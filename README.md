@@ -4,4 +4,4 @@ This is a personal project written in Python (backend) and React/Javascript (fro
 
 ## Authors
 
-* **Josh Kimmel** - *Quizzly Server, Bluetooth Libraries* - (https://github.com/joshkimmel16)
+* **Josh Kimmel** - (https://github.com/joshkimmel16)
